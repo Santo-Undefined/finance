@@ -1,1925 +1,1661 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=5.0"
-    />
-    <title>Interactive Recurring Deposit (RD) Calculator</title>
-    <style>
-      /* ==========================================================================
-         DESIGN TOKENS & THEME VARIABLES (Emerald & Slate Financial Palette)
-         ========================================================================== */
-      :root {
-        --bg-page: #f4f7f6;
-        --bg-card: #ffffff;
-        --bg-sidebar: #f3faf7;
-        --bg-sidebar-end: #ebf6f1;
-        --border-sidebar: #c3e4d6;
-        --border-subtle: #e2e8f0;
-        --border-input: #cbd5e1;
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>Interactive Recurring Deposit (RD) Calculator</title>
+  <style>
+    /* ==========================================================================
+       DESIGN TOKENS & THEME VARIABLES (Emerald & Slate Financial Palette)
+       ========================================================================== */
+    :root {
+      --bg-page: #f4f7f6;
+      --bg-card: #ffffff;
+      --bg-sidebar: #f3faf7;
+      --bg-sidebar-end: #ebf6f1;
+      --border-sidebar: #c3e4d6;
+      --border-subtle: #e2e8f0;
+      --border-input: #cbd5e1;
 
-        --emerald-900: #064e3b;
-        --emerald-800: #065f46;
-        --emerald-700: #047857;
-        --emerald-600: #059669;
-        --emerald-500: #10b981;
-        --emerald-100: #d1fae5;
-        --emerald-50: #ecfdf5;
+      --emerald-900: #064e3b;
+      --emerald-800: #065f46;
+      --emerald-700: #047857;
+      --emerald-600: #059669;
+      --emerald-500: #10b981;
+      --emerald-100: #d1fae5;
+      --emerald-50: #ecfdf5;
 
-        --slate-900: #0f172a;
-        --slate-800: #1e293b;
-        --slate-700: #334155;
-        --slate-600: #475569;
-        --slate-500: #64748b;
-        --slate-400: #94a3b8;
-        --slate-200: #e2e8f0;
-        --slate-100: #f1f5f9;
+      --slate-900: #0f172a;
+      --slate-800: #1e293b;
+      --slate-700: #334155;
+      --slate-600: #475569;
+      --slate-500: #64748b;
+      --slate-400: #94a3b8;
+      --slate-200: #e2e8f0;
+      --slate-100: #f1f5f9;
 
-        --amber-600: #d97706;
-        --amber-100: #fef3c7;
-        --amber-800: #92400e;
+      --amber-600: #d97706;
+      --amber-100: #fef3c7;
+      --amber-800: #92400e;
 
-        --shadow-sm:
-          0 1px 3px rgba(15, 23, 42, 0.05),
-          0 1px 2px rgba(15, 23, 42, 0.03);
-        --shadow-md:
-          0 4px 12px rgba(15, 23, 42, 0.06),
-          0 2px 4px rgba(15, 23, 42, 0.04);
-        --shadow-lg: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.03);
+      --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06), 0 2px 4px rgba(15, 23, 42, 0.04);
+      --shadow-lg: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
 
-        --radius-sm: 8px;
-        --radius-md: 12px;
-        --radius-lg: 16px;
-        --font-sans:
-          -apple-system,
-          BlinkMacSystemFont,
-          "Segoe UI",
-          Roboto,
-          "Helvetica Neue",
-          Arial,
-          sans-serif;
-        --font-mono:
-          ui-monospace,
-          SFMono-Regular,
-          Menlo,
-          Monaco,
-          Consolas,
-          monospace;
-      }
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
 
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-      html {
-        scroll-behavior: smooth;
-      }
+    html {
+      scroll-behavior: smooth;
+    }
 
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-page);
+      color: var(--slate-800);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: 76px; /* Space for sticky mobile footer */
+    }
+
+    @media (min-width: 1024px) {
       body {
-        font-family: var(--font-sans);
-        background-color: var(--bg-page);
-        color: var(--slate-800);
-        line-height: 1.5;
-        -webkit-font-smoothing: antialiased;
-        padding-bottom: 76px; /* Space for sticky mobile footer */
+        padding-bottom: 32px;
       }
+    }
 
-      @media (min-width: 1024px) {
-        body {
-          padding-bottom: 32px;
-        }
-      }
+    /* ==========================================================================
+       HEADER & QUICK PRESETS BAR
+       ========================================================================== */
+    .app-header {
+      background: linear-gradient(135deg, var(--emerald-900) 0%, var(--emerald-700) 100%);
+      color: #ffffff;
+      padding: 18px 16px 20px;
+      box-shadow: var(--shadow-md);
+    }
 
-      /* ==========================================================================
-         HEADER & QUICK PRESETS BAR
-         ========================================================================== */
-      .app-header {
-        background: linear-gradient(
-          135deg,
-          var(--emerald-900) 0%,
-          var(--emerald-700) 100%
-        );
-        color: #ffffff;
-        padding: 18px 16px 20px;
-        box-shadow: var(--shadow-md);
-      }
+    .header-inner {
+      max-width: 1320px;
+      margin: 0 auto;
+    }
 
-      .header-inner {
-        max-width: 1320px;
-        margin: 0 auto;
-      }
+    .header-top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
 
-      .header-top {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 14px;
-      }
+    .brand-block {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
 
-      .brand-block {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
 
-      .brand-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.14);
-        border: 1px solid rgba(255, 255, 255, 0.25);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-      }
+    .brand-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
 
-      .brand-title {
-        font-size: 1.25rem;
-        font-weight: 700;
-        letter-spacing: -0.02em;
-        line-height: 1.2;
-      }
+    .brand-subtitle {
+      font-size: 0.8125rem;
+      color: #a7f3d0;
+      margin-top: 2px;
+    }
 
-      .brand-subtitle {
-        font-size: 0.8125rem;
-        color: #a7f3d0;
-        margin-top: 2px;
-      }
+    .presets-strip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
 
-      .presets-strip {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        overflow-x: auto;
-        padding-bottom: 4px;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-      }
+    .presets-strip::-webkit-scrollbar {
+      display: none;
+    }
 
-      .presets-strip::-webkit-scrollbar {
-        display: none;
-      }
+    .presets-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #a7f3d0;
+      white-space: nowrap;
+      margin-right: 2px;
+    }
 
-      .presets-label {
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: #a7f3d0;
-        white-space: nowrap;
-        margin-right: 2px;
-      }
+    .preset-pill {
+      appearance: none;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.18s ease;
+    }
 
-      .preset-pill {
-        appearance: none;
-        border: 1px solid rgba(255, 255, 255, 0.28);
-        background: rgba(255, 255, 255, 0.1);
-        color: #ffffff;
-        font-family: inherit;
-        font-size: 0.8125rem;
-        font-weight: 500;
-        padding: 6px 12px;
-        border-radius: 999px;
-        cursor: pointer;
-        white-space: nowrap;
-        transition: all 0.18s ease;
-      }
+    .preset-pill:hover {
+      background: rgba(255, 255, 255, 0.22);
+    }
 
-      .preset-pill:hover {
-        background: rgba(255, 255, 255, 0.22);
-      }
+    .preset-pill.active {
+      background: #ffffff;
+      color: var(--emerald-900);
+      border-color: #ffffff;
+      font-weight: 700;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
 
-      .preset-pill.active {
-        background: #ffffff;
-        color: var(--emerald-900);
-        border-color: #ffffff;
-        font-weight: 700;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-      }
+    /* ==========================================================================
+       MAIN LAYOUT GRID
+       ========================================================================== */
+    .main-container {
+      max-width: 1320px;
+      margin: 20px auto 0;
+      padding: 0 16px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      align-items: start;
+    }
 
-      /* ==========================================================================
-         MAIN LAYOUT GRID
-         ========================================================================== */
+    @media (min-width: 1024px) {
       .main-container {
-        max-width: 1320px;
-        margin: 20px auto 0;
-        padding: 0 16px;
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 20px;
-        align-items: start;
+        grid-template-columns: 390px 1fr;
+        gap: 24px;
+        margin-top: 24px;
       }
+    }
 
-      @media (min-width: 1024px) {
-        .main-container {
-          grid-template-columns: 390px 1fr;
-          gap: 24px;
-          margin-top: 24px;
-        }
-      }
+    /* ==========================================================================
+       LEFT SIDEBAR: TINTED INPUT PANEL
+       ========================================================================== */
+    .sidebar-card {
+      background: linear-gradient(180deg, var(--bg-sidebar) 0%, var(--bg-sidebar-end) 100%);
+      border: 1px solid var(--border-sidebar);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+    }
 
-      /* ==========================================================================
-         LEFT SIDEBAR: TINTED INPUT PANEL
-         ========================================================================== */
+    @media (min-width: 1024px) {
       .sidebar-card {
-        background: linear-gradient(
-          180deg,
-          var(--bg-sidebar) 0%,
-          var(--bg-sidebar-end) 100%
-        );
-        border: 1px solid var(--border-sidebar);
-        border-radius: var(--radius-lg);
-        padding: 20px;
-        box-shadow: var(--shadow-sm);
+        position: sticky;
+        top: 20px;
+      }
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-sidebar);
+    }
+
+    .sidebar-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--emerald-900);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .reset-btn {
+      appearance: none;
+      background: #ffffff;
+      border: 1px solid var(--border-sidebar);
+      color: var(--emerald-800);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .reset-btn:hover {
+      background: var(--emerald-100);
+    }
+
+    /* Mode Switcher: Monthly Deposit vs Target Goal */
+    .mode-switcher {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      background: #ffffff;
+      border: 1px solid var(--border-sidebar);
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 18px;
+    }
+
+    .mode-btn {
+      appearance: none;
+      border: none;
+      background: transparent;
+      color: var(--slate-600);
+      font-family: inherit;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      padding: 8px 10px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .mode-btn.active {
+      background: var(--emerald-700);
+      color: #ffffff;
+      box-shadow: 0 1px 3px rgba(4, 120, 87, 0.25);
+    }
+
+    /* Control Groups */
+    .control-group {
+      padding-bottom: 16px;
+      margin-bottom: 16px;
+      border-bottom: 1px dashed #b7decb;
+    }
+
+    .control-group:last-child {
+      padding-bottom: 0;
+      margin-bottom: 0;
+      border-bottom: none;
+    }
+
+    .control-label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      gap: 8px;
+    }
+
+    .control-label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--slate-800);
+    }
+
+    .control-hint {
+      font-size: 0.75rem;
+      color: var(--emerald-800);
+      font-weight: 600;
+    }
+
+    /* Input Boxes */
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background: #ffffff;
+      border: 1.5px solid #b5dacb;
+      border-radius: 10px;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .input-wrapper:focus-within {
+      border-color: var(--emerald-600);
+      box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.14);
+    }
+
+    .input-prefix,
+    .input-suffix {
+      padding: 0 12px;
+      font-size: 0.9375rem;
+      font-weight: 700;
+      color: var(--emerald-800);
+      user-select: none;
+    }
+
+    .text-input {
+      width: 100%;
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--slate-900);
+      padding: 10px 12px;
+      outline: none;
+      min-height: 42px;
+    }
+
+    .input-prefix + .text-input {
+      padding-left: 0;
+    }
+
+    /* Tenure Split Row */
+    .tenure-row {
+      display: grid;
+      grid-template-columns: 1fr 124px;
+      gap: 8px;
+    }
+
+    .select-input {
+      width: 100%;
+      border: 1.5px solid #b5dacb;
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 0 12px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--slate-800);
+      min-height: 42px;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .select-input:focus {
+      border-color: var(--emerald-600);
+      box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.14);
+    }
+
+    /* Quick Amount Chips */
+    .chips-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 9px;
+    }
+
+    .chip-btn {
+      appearance: none;
+      background: #ffffff;
+      border: 1px solid #bfe0d2;
+      color: var(--slate-700);
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .chip-btn:hover {
+      border-color: var(--emerald-600);
+      color: var(--emerald-800);
+      background: var(--emerald-50);
+    }
+
+    .chip-btn.active {
+      background: var(--emerald-700);
+      border-color: var(--emerald-700);
+      color: #ffffff;
+    }
+
+    /* Interest Rate Slider + Numeric Input Row */
+    .rate-control-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .rate-slider-wrap {
+      flex: 1 1 auto;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .rate-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: #cce6db;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .rate-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--emerald-700);
+      border: 3px solid #ffffff;
+      box-shadow: 0 1px 4px rgba(6, 78, 59, 0.35);
+      cursor: pointer;
+      transition: transform 0.12s ease, background-color 0.12s ease;
+    }
+
+    .rate-slider::-webkit-slider-thumb:hover {
+      background: var(--emerald-800);
+      transform: scale(1.08);
+    }
+
+    .rate-slider::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--emerald-700);
+      border: 3px solid #ffffff;
+      box-shadow: 0 1px 4px rgba(6, 78, 59, 0.35);
+      cursor: pointer;
+    }
+
+    .rate-slider-ticks {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--slate-500);
+      margin-top: 6px;
+    }
+
+    .rate-input-box {
+      display: inline-flex;
+      align-items: center;
+      flex: 0 0 116px;
+      min-width: 116px;
+      height: 42px;
+      background: #ffffff;
+      border: 1.5px solid #b5dacb;
+      border-radius: 10px;
+      padding: 0 10px;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .rate-input-box:focus-within {
+      border-color: var(--emerald-600);
+      box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.14);
+    }
+
+    .rate-input-box input[type="number"] {
+      flex: 1 1 auto;
+      min-width: 0;
+      width: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: inherit;
+      text-align: right;
+      padding: 0 4px 0 0;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      font-size: 15px;
+      color: var(--slate-900);
+      -moz-appearance: textfield;
+    }
+
+    .rate-input-box input[type="number"]::-webkit-outer-spin-button,
+    .rate-input-box input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    @media (max-width: 767px) {
+      .rate-input-box {
+        flex: 0 0 120px;
+        min-width: 120px;
       }
 
-      @media (min-width: 1024px) {
-        .sidebar-card {
-          position: sticky;
-          top: 20px;
-        }
+      .rate-input-box input[type="number"] {
+        font-size: 16px;
       }
+    }
 
-      .sidebar-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 16px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid var(--border-sidebar);
-      }
+    .rate-suffix {
+      flex: 0 0 auto;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--emerald-800);
+      user-select: none;
+    }
 
-      .sidebar-title {
-        font-size: 1rem;
-        font-weight: 700;
-        color: var(--emerald-900);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
+    /* Tax Segmented Control */
+    .tax-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
 
-      .reset-btn {
-        appearance: none;
-        background: #ffffff;
-        border: 1px solid var(--border-sidebar);
-        color: var(--emerald-800);
-        font-size: 0.75rem;
-        font-weight: 600;
-        padding: 5px 10px;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: all 0.15s ease;
-      }
+    .tax-btn {
+      appearance: none;
+      background: #ffffff;
+      border: 1px solid #bfe0d2;
+      color: var(--slate-700);
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 8px 4px;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s ease;
+      min-height: 36px;
+    }
 
-      .reset-btn:hover {
-        background: var(--emerald-100);
-      }
+    .tax-btn.active {
+      background: var(--emerald-700);
+      border-color: var(--emerald-700);
+      color: #ffffff;
+    }
 
-      /* Mode Switcher: Monthly Deposit vs Target Goal */
-      .mode-switcher {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 4px;
-        background: #ffffff;
-        border: 1px solid var(--border-sidebar);
-        border-radius: 10px;
-        padding: 4px;
-        margin-bottom: 18px;
-      }
+    .custom-tax-box {
+      margin-top: 8px;
+      display: none;
+    }
 
-      .mode-btn {
-        appearance: none;
-        border: none;
-        background: transparent;
-        color: var(--slate-600);
-        font-family: inherit;
-        font-size: 0.8125rem;
-        font-weight: 600;
-        padding: 8px 10px;
-        border-radius: 7px;
-        cursor: pointer;
-        transition: all 0.15s ease;
-      }
+    .custom-tax-box.visible {
+      display: block;
+    }
 
-      .mode-btn.active {
-        background: var(--emerald-700);
-        color: #ffffff;
-        box-shadow: 0 1px 3px rgba(4, 120, 87, 0.25);
-      }
+    /* Inline Warning Banner */
+    .inline-warning {
+      display: none;
+      margin-top: 7px;
+      padding: 6px 10px;
+      background: var(--amber-100);
+      border: 1px solid #fcd34d;
+      color: var(--amber-800);
+      border-radius: 7px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
 
-      /* Control Groups */
-      .control-group {
-        padding-bottom: 16px;
-        margin-bottom: 16px;
-        border-bottom: 1px dashed #b7decb;
-      }
+    .inline-warning.visible {
+      display: block;
+    }
 
-      .control-group:last-child {
-        padding-bottom: 0;
-        margin-bottom: 0;
-        border-bottom: none;
-      }
+    /* ==========================================================================
+       RIGHT DASHBOARD: KPIS, CHARTS & LEDGER
+       ========================================================================== */
+    .dashboard-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      min-width: 0;
+    }
 
-      .control-label-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 8px;
-        gap: 8px;
-      }
+    /* KPI Summary Grid — All 4 cards share identical structure, sizing, and alignment */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
 
-      .control-label {
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: var(--slate-800);
-      }
-
-      .control-hint {
-        font-size: 0.75rem;
-        color: var(--emerald-800);
-        font-weight: 600;
-      }
-
-      /* Input Boxes */
-      .input-wrapper {
-        position: relative;
-        display: flex;
-        align-items: center;
-        background: #ffffff;
-        border: 1.5px solid #b5dacb;
-        border-radius: 10px;
-        transition: border-color 0.15s ease, box-shadow 0.15s ease;
-      }
-
-      .input-wrapper:focus-within {
-        border-color: var(--emerald-600);
-        box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.14);
-      }
-
-      .input-prefix,
-      .input-suffix {
-        padding: 0 12px;
-        font-size: 0.9375rem;
-        font-weight: 700;
-        color: var(--emerald-800);
-        user-select: none;
-      }
-
-      .text-input {
-        width: 100%;
-        border: none;
-        background: transparent;
-        font-family: inherit;
-        font-size: 1.05rem;
-        font-weight: 700;
-        color: var(--slate-900);
-        padding: 10px 12px;
-        outline: none;
-        min-height: 42px;
-      }
-
-      .input-prefix + .text-input {
-        padding-left: 0;
-      }
-
-      /* Tenure Split Row */
-      .tenure-row {
-        display: grid;
-        grid-template-columns: 1fr 124px;
-        gap: 8px;
-      }
-
-      .select-input {
-        width: 100%;
-        border: 1.5px solid #b5dacb;
-        background: #ffffff;
-        border-radius: 10px;
-        padding: 0 12px;
-        font-family: inherit;
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: var(--slate-800);
-        min-height: 42px;
-        cursor: pointer;
-        outline: none;
-      }
-
-      .select-input:focus {
-        border-color: var(--emerald-600);
-        box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.14);
-      }
-
-      /* Quick Amount Chips */
-      .chips-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        margin-top: 9px;
-      }
-
-      .chip-btn {
-        appearance: none;
-        background: #ffffff;
-        border: 1px solid #bfe0d2;
-        color: var(--slate-700);
-        font-family: inherit;
-        font-size: 0.75rem;
-        font-weight: 600;
-        padding: 5px 10px;
-        border-radius: 7px;
-        cursor: pointer;
-        transition: all 0.15s ease;
-      }
-
-      .chip-btn:hover {
-        border-color: var(--emerald-600);
-        color: var(--emerald-800);
-        background: var(--emerald-50);
-      }
-
-      .chip-btn.active {
-        background: var(--emerald-700);
-        border-color: var(--emerald-700);
-        color: #ffffff;
-      }
-
-      /* Range Slider */
-      .rate-input-row {
-        display: grid;
-        grid-template-columns: 1fr 112px;
-        gap: 12px;
-        align-items: center;
-      }
-
-      input[type="range"] {
-        -webkit-appearance: none;
-        width: 100%;
-        height: 6px;
-        border-radius: 999px;
-        background: #cde7dc;
-        outline: none;
-        cursor: pointer;
-      }
-
-      input[type="range"]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: var(--emerald-700);
-        border: 3px solid #ffffff;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
-        cursor: pointer;
-        transition: transform 0.12s ease;
-      }
-
-      input[type="range"]::-webkit-slider-thumb:hover {
-        transform: scale(1.1);
-      }
-
-      input[type="range"]::-moz-range-thumb {
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: var(--emerald-700);
-        border: 3px solid #ffffff;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
-        cursor: pointer;
-      }
-
-      .slider-bounds {
-        display: flex;
-        justify-content: space-between;
-        font-size: 0.7rem;
-        color: var(--slate-500);
-        margin-top: 4px;
-      }
-
-      /* Tax Segmented Control */
-      .tax-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 6px;
-      }
-
-      .tax-btn {
-        appearance: none;
-        background: #ffffff;
-        border: 1px solid #bfe0d2;
-        color: var(--slate-700);
-        font-family: inherit;
-        font-size: 0.75rem;
-        font-weight: 600;
-        padding: 8px 4px;
-        border-radius: 8px;
-        cursor: pointer;
-        text-align: center;
-        transition: all 0.15s ease;
-        min-height: 36px;
-      }
-
-      .tax-btn.active {
-        background: var(--emerald-700);
-        border-color: var(--emerald-700);
-        color: #ffffff;
-      }
-
-      .custom-tax-box {
-        margin-top: 8px;
-        display: none;
-      }
-
-      .custom-tax-box.visible {
-        display: block;
-      }
-
-      /* Inline Warning Banner */
-      .inline-warning {
-        display: none;
-        margin-top: 7px;
-        padding: 6px 10px;
-        background: var(--amber-100);
-        border: 1px solid #fcd34d;
-        color: var(--amber-800);
-        border-radius: 7px;
-        font-size: 0.75rem;
-        font-weight: 600;
-      }
-
-      .inline-warning.visible {
-        display: block;
-      }
-
-      /* ==========================================================================
-         RIGHT DASHBOARD: KPIS, CHARTS & LEDGER
-         ========================================================================== */
-      .dashboard-stack {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-        min-width: 0;
-      }
-
-      /* KPI Summary Grid */
+    @media (min-width: 768px) {
       .kpi-grid {
-        display: grid;
-        grid-template-columns: repeat(1, 1fr);
-        gap: 12px;
+        gap: 14px;
       }
+    }
 
-      @media (min-width: 540px) {
-        .kpi-grid {
-          grid-template-columns: repeat(2, 1fr);
-        }
+    @media (min-width: 1200px) {
+      .kpi-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
       }
+    }
 
-      @media (min-width: 1200px) {
-        .kpi-grid {
-          grid-template-columns: repeat(4, 1fr);
-        }
-      }
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-top: 3.5px solid var(--emerald-600);
+      border-radius: var(--radius-md);
+      padding: 12px 13px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-width: 0;
+    }
 
+    @media (min-width: 640px) {
       .kpi-card {
-        background: var(--bg-card);
-        border: 1px solid var(--border-subtle);
-        border-top: 4px solid var(--emerald-600);
-        border-radius: var(--radius-md);
         padding: 16px;
-        box-shadow: var(--shadow-md);
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
+        border-top-width: 4px;
       }
+    }
 
-      .kpi-card.highlight {
-        background: linear-gradient(180deg, #ffffff 0%, #f2fbf7 100%);
-        border-top-color: var(--emerald-700);
-      }
+    .kpi-card.highlight {
+      background: linear-gradient(180deg, #ffffff 0%, #f2fbf7 100%);
+      border-top-color: var(--emerald-700);
+    }
 
-      .kpi-card.slate-accent {
-        border-top-color: var(--slate-600);
-      }
+    .kpi-card.slate-accent {
+      border-top-color: var(--slate-600);
+    }
 
-      .kpi-card.teal-accent {
-        border-top-color: #0d9488;
-      }
+    .kpi-card.teal-accent {
+      border-top-color: #0d9488;
+    }
 
+    .kpi-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--slate-500);
+      margin-bottom: 4px;
+      line-height: 1.25;
+    }
+
+    @media (min-width: 640px) {
       .kpi-label {
         font-size: 0.75rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: var(--slate-500);
         margin-bottom: 6px;
       }
+    }
 
-      .kpi-value {
-        font-size: 1.4rem;
-        font-weight: 800;
-        color: var(--slate-900);
-        letter-spacing: -0.02em;
-        line-height: 1.2;
-        word-break: break-word;
-      }
+    .kpi-value {
+      font-size: clamp(1.12rem, 4.4vw, 1.42rem);
+      font-weight: 800;
+      color: var(--slate-900);
+      letter-spacing: -0.02em;
+      line-height: 1.18;
+      font-variant-numeric: tabular-nums;
+      overflow-wrap: anywhere;
+    }
 
-      .kpi-card.highlight .kpi-value {
-        color: var(--emerald-800);
-      }
+    .kpi-card.highlight .kpi-value {
+      color: var(--emerald-800);
+    }
 
+    .kpi-sub {
+      font-size: 0.71rem;
+      font-weight: 600;
+      color: var(--slate-600);
+      margin-top: 7px;
+      padding-top: 7px;
+      border-top: 1px solid var(--slate-100);
+      line-height: 1.35;
+      font-variant-numeric: tabular-nums;
+    }
+
+    @media (min-width: 640px) {
       .kpi-sub {
         font-size: 0.75rem;
-        font-weight: 600;
-        color: var(--slate-600);
         margin-top: 8px;
         padding-top: 8px;
-        border-top: 1px solid var(--slate-100);
       }
+    }
 
-      .badge-gain {
-        display: inline-block;
-        background: var(--emerald-100);
-        color: var(--emerald-900);
-        padding: 1px 6px;
-        border-radius: 4px;
-        font-weight: 700;
-      }
+    .badge-gain {
+      display: inline-block;
+      background: var(--emerald-100);
+      color: var(--emerald-900);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
 
-      /* Card Shell for Charts & Table */
-      .panel-card {
-        background: var(--bg-card);
-        border: 1px solid var(--border-subtle);
-        border-radius: var(--radius-lg);
-        padding: 20px;
-        box-shadow: var(--shadow-sm);
-      }
+    /* Card Shell for Charts & Table */
+    .panel-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+    }
 
-      .panel-header {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 16px;
-      }
+    .panel-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
 
-      .panel-title {
-        font-size: 1.05rem;
-        font-weight: 700;
-        color: var(--slate-900);
-      }
+    .panel-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--slate-900);
+    }
 
-      .panel-subtitle {
-        font-size: 0.8125rem;
-        color: var(--slate-500);
-        margin-top: 2px;
-      }
+    .panel-subtitle {
+      font-size: 0.8125rem;
+      color: var(--slate-500);
+      margin-top: 2px;
+    }
 
-      /* Chart Tab Switcher */
-      .tab-group {
-        display: inline-flex;
-        background: var(--slate-100);
-        padding: 4px;
-        border-radius: 10px;
-        border: 1px solid var(--slate-200);
-      }
+    /* Chart Tab Switcher */
+    .tab-group {
+      display: inline-flex;
+      background: var(--slate-100);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--slate-200);
+    }
 
-      .tab-btn {
-        appearance: none;
-        border: none;
-        background: transparent;
-        color: var(--slate-600);
-        font-family: inherit;
-        font-size: 0.8125rem;
-        font-weight: 600;
-        padding: 7px 14px;
-        border-radius: 7px;
-        cursor: pointer;
-        transition: all 0.15s ease;
-      }
+    .tab-btn {
+      appearance: none;
+      border: none;
+      background: transparent;
+      color: var(--slate-600);
+      font-family: inherit;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      padding: 7px 14px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
 
-      .tab-btn.active {
-        background: #ffffff;
-        color: var(--emerald-800);
-        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
-      }
+    .tab-btn.active {
+      background: #ffffff;
+      color: var(--emerald-800);
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+    }
 
-      /* Legend */
-      .chart-legend {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 16px;
-        margin-bottom: 12px;
-        font-size: 0.8125rem;
-        font-weight: 600;
-        color: var(--slate-700);
-      }
+    /* Legend */
+    .chart-legend {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 12px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--slate-700);
+    }
 
-      .legend-item {
-        display: flex;
-        align-items: center;
-        gap: 7px;
-      }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
 
-      .legend-swatch {
-        width: 12px;
-        height: 12px;
-        border-radius: 3px;
-      }
+    .legend-swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
 
-      /* Canvas Container & Tooltip */
+    /* Canvas Container & Tooltip */
+    .canvas-wrapper {
+      position: relative;
+      width: 100%;
+      height: 310px;
+      touch-action: pan-y;
+    }
+
+    @media (min-width: 768px) {
       .canvas-wrapper {
-        position: relative;
-        width: 100%;
-        height: 310px;
-        touch-action: pan-y;
+        height: 350px;
       }
+    }
 
-      @media (min-width: 768px) {
-        .canvas-wrapper {
-          height: 350px;
-        }
-      }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+    }
 
-      canvas {
-        display: block;
-        width: 100%;
-        height: 100%;
-        cursor: crosshair;
-      }
+    .chart-tooltip {
+      position: absolute;
+      pointer-events: none;
+      background: rgba(15, 23, 42, 0.96);
+      color: #ffffff;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 0.78rem;
+      line-height: 1.45;
+      box-shadow: var(--shadow-lg);
+      z-index: 20;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 0.12s ease, transform 0.12s ease;
+      min-width: 168px;
+      max-width: 240px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
 
-      .chart-tooltip {
-        position: absolute;
-        pointer-events: none;
-        background: rgba(15, 23, 42, 0.96);
-        color: #ffffff;
-        padding: 10px 12px;
-        border-radius: 10px;
-        font-size: 0.78rem;
-        line-height: 1.45;
-        box-shadow: var(--shadow-lg);
-        z-index: 20;
-        opacity: 0;
-        transform: translateY(4px);
-        transition: opacity 0.12s ease, transform 0.12s ease;
-        min-width: 168px;
-        max-width: 240px;
-        border: 1px solid rgba(255, 255, 255, 0.12);
-      }
+    .chart-tooltip.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
 
-      .chart-tooltip.visible {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    .tt-header {
+      font-weight: 700;
+      color: #6ee7b7;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+      padding-bottom: 4px;
+      margin-bottom: 6px;
+    }
 
-      .tt-header {
-        font-weight: 700;
-        color: #6ee7b7;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-        padding-bottom: 4px;
-        margin-bottom: 6px;
-      }
+    .tt-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 2px;
+    }
 
-      .tt-row {
-        display: flex;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 2px;
-      }
+    .tt-val {
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
 
-      .tt-val {
-        font-weight: 700;
-        font-variant-numeric: tabular-nums;
-      }
+    /* Formula Note Box */
+    .formula-callout {
+      margin-top: 14px;
+      padding: 11px 14px;
+      background: var(--slate-50, #f8fafc);
+      border: 1px solid var(--slate-200);
+      border-radius: 10px;
+      font-size: 0.78rem;
+      color: var(--slate-600);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
 
-      /* Formula Note Box */
-      .formula-callout {
-        margin-top: 14px;
-        padding: 11px 14px;
-        background: var(--slate-50, #f8fafc);
-        border: 1px solid var(--slate-200);
-        border-radius: 10px;
-        font-size: 0.78rem;
-        color: var(--slate-600);
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-      }
+    .formula-code {
+      font-family: var(--font-mono);
+      background: #ffffff;
+      border: 1px solid var(--slate-200);
+      padding: 2px 7px;
+      border-radius: 5px;
+      color: var(--emerald-900);
+      font-size: 0.75rem;
+    }
 
-      .formula-code {
-        font-family: var(--font-mono);
-        background: #ffffff;
-        border: 1px solid var(--slate-200);
-        padding: 2px 7px;
-        border-radius: 5px;
-        color: var(--emerald-900);
-        font-size: 0.75rem;
-      }
+    /* ==========================================================================
+       SCHEDULE TABLE
+       ========================================================================== */
+    .table-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
 
-      /* ==========================================================================
-         SCHEDULE TABLE
-         ========================================================================== */
-      .table-actions {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
+    .table-scroll {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--slate-200);
+      border-radius: 10px;
+      max-height: 440px;
+      overflow-y: auto;
+    }
 
-      .collapse-btn {
-        appearance: none;
-        background: var(--emerald-50);
-        border: 1px solid var(--border-sidebar);
-        color: var(--emerald-900);
-        font-family: inherit;
-        font-size: 0.8125rem;
-        font-weight: 600;
-        padding: 7px 12px;
-        border-radius: 8px;
-        cursor: pointer;
-      }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+      text-align: right;
+      white-space: nowrap;
+    }
 
-      .collapse-btn:hover {
-        background: var(--emerald-100);
-      }
+    thead th {
+      position: sticky;
+      top: 0;
+      background: var(--slate-100);
+      color: var(--slate-700);
+      font-weight: 700;
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--slate-200);
+      z-index: 2;
+    }
 
-      .table-scroll {
-        width: 100%;
-        overflow-x: auto;
-        border: 1px solid var(--slate-200);
-        border-radius: 10px;
-        max-height: 440px;
-        overflow-y: auto;
-      }
+    thead th:first-child,
+    tbody td:first-child {
+      text-align: left;
+      position: sticky;
+      left: 0;
+      background: #ffffff;
+      z-index: 1;
+      font-weight: 700;
+      color: var(--slate-800);
+    }
 
-      .table-scroll.collapsed {
+    thead th:first-child {
+      background: var(--slate-100);
+      z-index: 3;
+    }
+
+    tbody td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--slate-100);
+      color: var(--slate-700);
+      font-variant-numeric: tabular-nums;
+    }
+
+    tbody tr:hover td {
+      background: var(--emerald-50);
+    }
+
+    tbody tr.quarter-milestone td {
+      background: #f8fcfa;
+      font-weight: 600;
+    }
+
+    .interest-cell {
+      color: var(--emerald-700);
+      font-weight: 600;
+    }
+
+    .closing-cell {
+      color: var(--slate-900);
+      font-weight: 700;
+    }
+
+    /* ==========================================================================
+       STICKY MOBILE SUMMARY FOOTER
+       ========================================================================== */
+    .mobile-sticky-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--emerald-900);
+      color: #ffffff;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.18);
+      z-index: 50;
+    }
+
+    @media (min-width: 1024px) {
+      .mobile-sticky-bar {
         display: none;
       }
+    }
 
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.84rem;
-        text-align: right;
-        white-space: nowrap;
-      }
+    .mobile-bar-stats {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
 
-      thead th {
-        position: sticky;
-        top: 0;
-        background: var(--slate-100);
-        color: var(--slate-700);
-        font-weight: 700;
-        padding: 11px 14px;
-        border-bottom: 1px solid var(--slate-200);
-        z-index: 2;
-      }
+    .mobile-stat-label {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #a7f3d0;
+    }
 
-      thead th:first-child,
-      tbody td:first-child {
-        text-align: left;
-        position: sticky;
-        left: 0;
-        background: #ffffff;
-        z-index: 1;
-        font-weight: 700;
-        color: var(--slate-800);
-      }
+    .mobile-stat-val {
+      font-size: 0.98rem;
+      font-weight: 800;
+    }
 
-      thead th:first-child {
-        background: var(--slate-100);
-        z-index: 3;
-      }
-
-      tbody td {
-        padding: 10px 14px;
-        border-bottom: 1px solid var(--slate-100);
-        color: var(--slate-700);
-        font-variant-numeric: tabular-nums;
-      }
-
-      tbody tr:hover td {
-        background: var(--emerald-50);
-      }
-
-      tbody tr.quarter-milestone td {
-        background: #f8fcfa;
-        font-weight: 600;
-      }
-
-      .interest-cell {
-        color: var(--emerald-700);
-        font-weight: 600;
-      }
-
-      .closing-cell {
-        color: var(--slate-900);
-        font-weight: 700;
-      }
-
-      /* ==========================================================================
-         STICKY MOBILE SUMMARY FOOTER
-         ========================================================================== */
-      .mobile-sticky-bar {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: var(--emerald-900);
-        color: #ffffff;
-        padding: 10px 16px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.18);
-        z-index: 50;
-      }
-
-      @media (min-width: 1024px) {
-        .mobile-sticky-bar {
-          display: none;
-        }
-      }
-
-      .mobile-bar-stats {
-        display: flex;
-        gap: 16px;
-        align-items: center;
-      }
-
-      .mobile-stat-label {
-        font-size: 0.68rem;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: #a7f3d0;
-      }
-
-      .mobile-stat-val {
-        font-size: 0.98rem;
-        font-weight: 800;
-      }
-
-      .mobile-jump-btn {
-        appearance: none;
-        background: #ffffff;
-        color: var(--emerald-900);
-        border: none;
-        font-family: inherit;
-        font-size: 0.8rem;
-        font-weight: 700;
-        padding: 8px 12px;
-        border-radius: 8px;
-        cursor: pointer;
-        white-space: nowrap;
-      }
-    </style>
-  </head>
-  <body>
-    <!-- ========================================================================
+    .mobile-jump-btn {
+      appearance: none;
+      background: #ffffff;
+      color: var(--emerald-900);
+      border: none;
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <!-- ========================================================================
        HEADER & QUICK PLAN PRESETS
        ======================================================================== -->
-    <header class="app-header">
-      <div class="header-inner">
-        <div class="header-top">
-          <div class="brand-block">
-            <div class="brand-icon" aria-hidden="true">
-              <svg
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
-                <polyline points="16 7 22 7 22 13"></polyline>
-              </svg>
-            </div>
-            <div>
-              <h1 class="brand-title">Recurring Deposit (RD) Calculator</h1>
-              <p class="brand-subtitle">
-                Quarterly Compounding Engine, Goal Planner &amp; Growth
-                Visualizer
-              </p>
-            </div>
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-top">
+        <div class="brand-block">
+          <div class="brand-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+              <polyline points="16 7 22 7 22 13"></polyline>
+            </svg>
+          </div>
+          <div>
+            <h1 class="brand-title">Recurring Deposit (RD) Calculator</h1>
+            <p class="brand-subtitle">Quarterly Compounding Engine, Goal Planner &amp; Growth Visualizer</p>
           </div>
         </div>
-
-        <!-- Quick-Select Plan Pills -->
-        <div class="presets-strip" role="group" aria-label="Quick RD Presets">
-          <span class="presets-label">Quick Plans:</span>
-          <button type="button" class="preset-pill" data-preset="6m">
-            6M @ 5.75%
-          </button>
-          <button type="button" class="preset-pill active" data-preset="1y">
-            1 Yr @ 6.50%
-          </button>
-          <button type="button" class="preset-pill" data-preset="2y">
-            2 Yrs @ 6.75%
-          </button>
-          <button type="button" class="preset-pill" data-preset="3y">
-            3 Yrs @ 7.00%
-          </button>
-          <button type="button" class="preset-pill" data-preset="5y">
-            5 Yrs @ 6.75%
-          </button>
-          <button type="button" class="preset-pill" data-preset="sinking">
-            Goal Sinking Fund ₹1,500/Mo
-          </button>
-        </div>
       </div>
-    </header>
 
-    <!-- ========================================================================
+      <!-- Quick-Select Plan Pills -->
+      <div class="presets-strip" role="group" aria-label="Quick RD Presets">
+        <span class="presets-label">Quick Plans:</span>
+        <button type="button" class="preset-pill" data-preset="6m">6M @ 5.75%</button>
+        <button type="button" class="preset-pill active" data-preset="1y">1 Yr @ 6.50%</button>
+        <button type="button" class="preset-pill" data-preset="2y">2 Yrs @ 6.75%</button>
+        <button type="button" class="preset-pill" data-preset="3y">3 Yrs @ 7.00%</button>
+        <button type="button" class="preset-pill" data-preset="5y">5 Yrs @ 6.75%</button>
+        <button type="button" class="preset-pill" data-preset="sinking">Goal Sinking Fund ₹1,500/Mo</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================
        MAIN CALCULATOR CONTAINER
        ======================================================================== -->
-    <main class="main-container">
-      <!-- LEFT TINTED INPUT SIDEBAR -->
-      <aside class="sidebar-card" aria-label="RD Calculator Parameters">
-        <div class="sidebar-header">
-          <h2 class="sidebar-title">
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <line x1="12" y1="1" x2="12" y2="23"></line>
-              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6">
-              </path>
-            </svg>
-            Deposit &amp; Plan Inputs
-          </h2>
-          <button type="button" id="resetDefaultsBtn" class="reset-btn">
-            Reset
-          </button>
-        </div>
+  <main class="main-container">
+    <!-- LEFT TINTED INPUT SIDEBAR -->
+    <aside class="sidebar-card" aria-label="RD Calculator Parameters">
+      <div class="sidebar-header">
+        <h2 class="sidebar-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+          Deposit &amp; Plan Inputs
+        </h2>
+        <button type="button" id="resetDefaultsBtn" class="reset-btn">Reset</button>
+      </div>
 
-        <!-- Mode Toggle: By Monthly Deposit vs Target Maturity Goal -->
-        <div class="mode-switcher" role="tablist" aria-label="Calculation Mode">
-          <button
-            type="button"
-            class="mode-btn active"
-            id="modeDepositBtn"
-            role="tab"
-            aria-selected="true"
-          >
-            Monthly Deposit
-          </button>
-          <button
-            type="button"
-            class="mode-btn"
-            id="modeGoalBtn"
-            role="tab"
-            aria-selected="false"
-          >
-            Target Goal
-          </button>
-        </div>
+      <!-- Mode Toggle: By Monthly Deposit vs Target Maturity Goal -->
+      <div class="mode-switcher" role="tablist" aria-label="Calculation Mode">
+        <button type="button" class="mode-btn active" id="modeDepositBtn" role="tab" aria-selected="true">Monthly Deposit</button>
+        <button type="button" class="mode-btn" id="modeGoalBtn" role="tab" aria-selected="false">Target Goal</button>
+      </div>
 
-        <!-- 1. Monthly Installment OR Target Maturity Goal -->
-        <div class="control-group" id="depositInputGroup">
-          <div class="control-label-row">
-            <label for="monthlyDepositInput" class="control-label"
-            >Monthly Installment</label>
-            <span class="control-hint">Min ₹100</span>
-          </div>
+      <!-- 1. Monthly Installment OR Target Maturity Goal -->
+      <div class="control-group" id="depositInputGroup">
+        <div class="control-label-row">
+          <label for="monthlyDepositInput" class="control-label">Monthly Installment</label>
+          <span class="control-hint">Min ₹100</span>
+        </div>
+        <div class="input-wrapper">
+          <span class="input-prefix">₹</span>
+          <input type="text" id="monthlyDepositInput" class="text-input" inputmode="numeric" value="5,000" aria-describedby="depositWarning" />
+        </div>
+        <div id="depositWarning" class="inline-warning" role="alert">Minimum monthly deposit is ₹100. Adjusted automatically when you finish typing.</div>
+        <div class="chips-row" id="depositChips">
+          <button type="button" class="chip-btn" data-val="500">₹500</button>
+          <button type="button" class="chip-btn" data-val="1500">₹1,500</button>
+          <button type="button" class="chip-btn" data-val="2500">₹2,500</button>
+          <button type="button" class="chip-btn active" data-val="5000">₹5,000</button>
+          <button type="button" class="chip-btn" data-val="10000">₹10K</button>
+          <button type="button" class="chip-btn" data-val="25000">₹25K</button>
+        </div>
+      </div>
+
+      <div class="control-group" id="goalInputGroup" style="display: none;">
+        <div class="control-label-row">
+          <label for="targetGoalInput" class="control-label">Target Maturity Amount</label>
+          <span class="control-hint">Min ₹1,000</span>
+        </div>
+        <div class="input-wrapper">
+          <span class="input-prefix">₹</span>
+          <input type="text" id="targetGoalInput" class="text-input" inputmode="numeric" value="70,000" aria-describedby="goalWarning" />
+        </div>
+        <div id="goalWarning" class="inline-warning" role="alert">Minimum target maturity goal is ₹1,000.</div>
+        <div class="chips-row" id="goalChips">
+          <button type="button" class="chip-btn" data-goal="25000">₹25K</button>
+          <button type="button" class="chip-btn" data-goal="50000">₹50K</button>
+          <button type="button" class="chip-btn active" data-goal="70000">₹70K</button>
+          <button type="button" class="chip-btn" data-goal="100000">₹1L</button>
+          <button type="button" class="chip-btn" data-goal="250000">₹2.5L</button>
+        </div>
+      </div>
+
+      <!-- 2. Tenure -->
+      <div class="control-group">
+        <div class="control-label-row">
+          <label for="tenureInput" class="control-label">Deposit Tenure</label>
+          <span class="control-hint" id="tenureEquivalent">12 Months (1.0 Yr)</span>
+        </div>
+        <div class="tenure-row">
           <div class="input-wrapper">
-            <span class="input-prefix">₹</span>
-            <input
-              type="text"
-              id="monthlyDepositInput"
-              class="text-input"
-              inputmode="numeric"
-              value="5,000"
-              aria-describedby="depositWarning"
-            />
+            <input type="number" id="tenureInput" class="text-input" min="1" max="120" step="1" value="12" aria-describedby="tenureWarning" />
           </div>
-          <div id="depositWarning" class="inline-warning" role="alert">
-            Minimum monthly deposit is ₹100. Adjusted automatically when you
-            finish typing.
-          </div>
-          <div class="chips-row" id="depositChips">
-            <button type="button" class="chip-btn" data-val="500">
-              ₹500
-            </button>
-            <button type="button" class="chip-btn" data-val="1500">
-              ₹1,500
-            </button>
-            <button type="button" class="chip-btn" data-val="2500">
-              ₹2,500
-            </button>
-            <button type="button" class="chip-btn active" data-val="5000">
-              ₹5,000
-            </button>
-            <button type="button" class="chip-btn" data-val="10000">
-              ₹10K
-            </button>
-            <button type="button" class="chip-btn" data-val="25000">
-              ₹25K
-            </button>
-          </div>
-        </div>
-
-        <div class="control-group" id="goalInputGroup" style="display: none">
-          <div class="control-label-row">
-            <label for="targetGoalInput" class="control-label"
-            >Target Maturity Amount</label>
-            <span class="control-hint">Min ₹1,000</span>
-          </div>
-          <div class="input-wrapper">
-            <span class="input-prefix">₹</span>
-            <input
-              type="text"
-              id="targetGoalInput"
-              class="text-input"
-              inputmode="numeric"
-              value="70,000"
-              aria-describedby="goalWarning"
-            />
-          </div>
-          <div id="goalWarning" class="inline-warning" role="alert">
-            Minimum target maturity goal is ₹1,000.
-          </div>
-          <div class="chips-row" id="goalChips">
-            <button type="button" class="chip-btn" data-goal="25000">
-              ₹25K
-            </button>
-            <button type="button" class="chip-btn" data-goal="50000">
-              ₹50K
-            </button>
-            <button type="button" class="chip-btn active" data-goal="70000">
-              ₹70K
-            </button>
-            <button type="button" class="chip-btn" data-goal="100000">
-              ₹1L
-            </button>
-            <button type="button" class="chip-btn" data-goal="250000">
-              ₹2.5L
-            </button>
-          </div>
-        </div>
-
-        <!-- 2. Tenure -->
-        <div class="control-group">
-          <div class="control-label-row">
-            <label for="tenureInput" class="control-label"
-            >Deposit Tenure</label>
-            <span class="control-hint" id="tenureEquivalent"
-            >12 Months (1.0 Yr)</span>
-          </div>
-          <div class="tenure-row">
-            <div class="input-wrapper">
-              <input
-                type="number"
-                id="tenureInput"
-                class="text-input"
-                min="1"
-                max="120"
-                step="1"
-                value="12"
-                aria-describedby="tenureWarning"
-              />
-            </div>
-            <select
-              id="tenureUnit"
-              class="select-input"
-              aria-label="Tenure Unit"
-            >
-              <option value="months" selected>Months</option>
-              <option value="years">Years</option>
-            </select>
-          </div>
-          <div id="tenureWarning" class="inline-warning" role="alert">
-            RD tenure must be between 6 months and 10 years (120 months).
-          </div>
-        </div>
-
-        <!-- 3. Interest Rate (% p.a.) -->
-        <div class="control-group">
-          <div class="control-label-row">
-            <label for="rateInput" class="control-label"
-            >Interest Rate (% p.a.)</label>
-            <span class="control-hint" id="effectiveYieldBadge"
-            >Effective ~6.66% p.a.</span>
-          </div>
-          <div class="rate-input-row">
-            <div>
-              <input
-                type="range"
-                id="rateSlider"
-                min="1.00"
-                max="15.00"
-                step="0.05"
-                value="6.50"
-                aria-label="Interest Rate Slider"
-              />
-              <div class="slider-bounds">
-                <span>1.00%</span>
-                <span>8.00%</span>
-                <span>15.00%</span>
-              </div>
-            </div>
-            <div class="input-wrapper">
-              <input
-                type="number"
-                id="rateInput"
-                class="text-input"
-                min="1"
-                max="15"
-                step="0.05"
-                value="6.50"
-                aria-describedby="rateWarning"
-              />
-              <span class="input-suffix">%</span>
-            </div>
-          </div>
-          <div id="rateWarning" class="inline-warning" role="alert">
-            Enter an interest rate between 1.00% and 15.00% p.a.
-          </div>
-        </div>
-
-        <!-- 4. Compounding Frequency -->
-        <div class="control-group">
-          <div class="control-label-row">
-            <label for="compoundingSelect" class="control-label"
-            >Compounding Frequency</label>
-            <span class="control-hint">Indian Banks: Quarterly</span>
-          </div>
-          <select id="compoundingSelect" class="select-input">
-            <option value="4" selected>
-              Quarterly (Every 3 Months - Standard)
-            </option>
-            <option value="12">Monthly (Every Month)</option>
-            <option value="2">Half-Yearly (Every 6 Months)</option>
-            <option value="1">Yearly (Annual)</option>
+          <select id="tenureUnit" class="select-input" aria-label="Tenure Unit">
+            <option value="months" selected>Months</option>
+            <option value="years">Years</option>
           </select>
         </div>
+        <div id="tenureWarning" class="inline-warning" role="alert">RD tenure must be between 6 months and 10 years (120 months).</div>
+      </div>
 
-        <!-- 5. Tax / TDS Slab -->
-        <div class="control-group">
-          <div class="control-label-row">
-            <span class="control-label">Tax / TDS on Interest</span>
-            <span class="control-hint" id="taxStatusLabel"
-            >No Tax Deducted</span>
-          </div>
-          <div class="tax-grid" role="group" aria-label="Tax Slab Presets">
-            <button type="button" class="tax-btn active" data-tax="0">
-              0% (None)
-            </button>
-            <button type="button" class="tax-btn" data-tax="10">10% TDS</button>
-            <button type="button" class="tax-btn" data-tax="20">
-              20% Slab
-            </button>
-            <button type="button" class="tax-btn" data-tax="custom">
-              Custom %
-            </button>
-          </div>
-          <div class="custom-tax-box" id="customTaxBox">
-            <div class="input-wrapper">
-              <input
-                type="number"
-                id="customTaxInput"
-                class="text-input"
-                min="0"
-                max="50"
-                step="0.5"
-                value="30"
-                placeholder="Enter tax %"
-              />
-              <span class="input-suffix">%</span>
+      <!-- 3. Interest Rate (% p.a.) -->
+      <div class="control-group">
+        <div class="control-label-row">
+          <label for="rateInput" class="control-label">Interest Rate (% p.a.)</label>
+          <span class="control-hint" id="effectiveYieldBadge">Effective ~6.66% p.a.</span>
+        </div>
+        <div class="rate-control-row">
+          <div class="rate-slider-wrap">
+            <input type="range" id="rateSlider" class="rate-slider" min="1" max="15" step="0.05" value="6.50" aria-label="Interest Rate Slider" />
+            <div class="rate-slider-ticks">
+              <span>1%</span>
+              <span>5%</span>
+              <span>10%</span>
+              <span>15%</span>
             </div>
+          </div>
+          <div class="rate-input-box">
+            <input type="number" id="rateInput" min="1" max="15" step="0.05" value="6.50" inputmode="decimal" aria-describedby="rateWarning" />
+            <span class="rate-suffix">%</span>
           </div>
         </div>
-      </aside>
+        <div id="rateWarning" class="inline-warning" role="alert">Enter an interest rate between 1.00% and 15.00% p.a.</div>
+      </div>
 
-      <!-- RIGHT DASHBOARD AREA -->
-      <section class="dashboard-stack">
-        <!-- 4 Emphasized KPI Cards -->
-        <div class="kpi-grid">
-          <article class="kpi-card highlight">
-            <div>
-              <div class="kpi-label" id="kpi1Label">Final Maturity Value</div>
-              <div class="kpi-value" id="kpiMaturity">₹62,143</div>
-            </div>
-            <div class="kpi-sub" id="kpiMaturitySub">
-              Principal: ₹60,000 + Int: ₹2,143
-            </div>
-          </article>
-
-          <article class="kpi-card">
-            <div>
-              <div class="kpi-label">Total Interest Earned</div>
-              <div class="kpi-value" id="kpiInterest">₹2,143</div>
-            </div>
-            <div class="kpi-sub" id="kpiInterestSub">
-              Absolute Gain: <span class="badge-gain">+3.57%</span>
-            </div>
-          </article>
-
-          <article class="kpi-card slate-accent">
-            <div>
-              <div class="kpi-label" id="kpi3Label">
-                Total Principal Invested
-              </div>
-              <div class="kpi-value" id="kpiPrincipal">₹60,000</div>
-            </div>
-            <div class="kpi-sub" id="kpiPrincipalSub">
-              12 installments × ₹5,000/mo
-            </div>
-          </article>
-
-          <article class="kpi-card teal-accent">
-            <div>
-              <div class="kpi-label">Post-Tax Net Maturity</div>
-              <div class="kpi-value" id="kpiPostTax">₹62,143</div>
-            </div>
-            <div class="kpi-sub" id="kpiPostTaxSub">
-              Net Gain: +₹2,143 | Tax: ₹0
-            </div>
-          </article>
+      <!-- 4. Compounding Frequency -->
+      <div class="control-group">
+        <div class="control-label-row">
+          <label for="compoundingSelect" class="control-label">Compounding Frequency</label>
+          <span class="control-hint">Indian Banks: Quarterly</span>
         </div>
+        <select id="compoundingSelect" class="select-input">
+          <option value="4" selected>Quarterly (Every 3 Months - Standard)</option>
+          <option value="12">Monthly (Every Month)</option>
+          <option value="2">Half-Yearly (Every 6 Months)</option>
+          <option value="1">Yearly (Annual)</option>
+        </select>
+      </div>
 
-        <!-- Interactive Canvas Chart Card -->
-        <section class="panel-card" id="chartSection">
-          <div class="panel-header">
-            <div>
-              <h2 class="panel-title" id="chartTitle">
-                RD Growth Trajectory (Principal vs. Compound Interest)
-              </h2>
-              <p class="panel-subtitle" id="chartSubtitle">
-                Hover or drag across bars to inspect quarterly interest
-                acceleration
-              </p>
-            </div>
-            <div class="tab-group" role="tablist" aria-label="Chart View Mode">
-              <button
-                type="button"
-                class="tab-btn active"
-                id="tabTimelineBtn"
-                role="tab"
-                aria-selected="true"
-              >
-                Growth Timeline
-              </button>
-              <button
-                type="button"
-                class="tab-btn"
-                id="tabDonutBtn"
-                role="tab"
-                aria-selected="false"
-              >
-                Corpus Breakdown
-              </button>
-            </div>
-          </div>
-
-          <div class="chart-legend" id="chartLegend">
-            <div class="legend-item">
-              <span class="legend-swatch" style="background: #0f766e"></span>
-              <span>Cumulative Principal</span>
-            </div>
-            <div class="legend-item">
-              <span class="legend-swatch" style="background: #10b981"></span>
-              <span>Accrued Compound Interest</span>
-            </div>
-          </div>
-
-          <div class="canvas-wrapper" id="canvasContainer">
-            <canvas id="rdCanvas"></canvas>
-            <div class="chart-tooltip" id="chartTooltip" role="tooltip"></div>
-          </div>
-
-          <div class="formula-callout">
-            <span><strong>Standard RD Formula:</strong> Each installment <em
-              >k</em> compounds for <em>(N &minus; k + 1)</em> months until
-              maturity.</span>
-            <code class="formula-code"
-            >M = &Sigma; P &times; (1 + r/n)^(n &times; t_k)</code>
-          </div>
-        </section>
-
-        <!-- Month-by-Month / Quarter-by-Quarter Ledger Card -->
-        <section class="panel-card">
-          <div class="panel-header">
-            <div>
-              <h2 class="panel-title">Compounding Schedule &amp; Ledger</h2>
-              <p class="panel-subtitle">
-                See how each installment contributes to quarterly interest
-                acceleration
-              </p>
-            </div>
-            <div class="table-actions">
-              <div
-                class="tab-group"
-                role="tablist"
-                aria-label="Schedule Granularity"
-              >
-                <button
-                  type="button"
-                  class="tab-btn active"
-                  id="ledgerMonthlyBtn"
-                >
-                  Monthly
-                </button>
-                <button type="button" class="tab-btn" id="ledgerQuarterlyBtn">
-                  Quarterly
-                </button>
-              </div>
-              <button type="button" class="collapse-btn" id="toggleLedgerBtn">
-                Hide Table
-              </button>
-            </div>
-          </div>
-
-          <div class="table-scroll" id="ledgerWrapper">
-            <table>
-              <thead>
-                <tr>
-                  <th>Period</th>
-                  <th>Deposit Added</th>
-                  <th>Cumulative Principal</th>
-                  <th>Period Interest</th>
-                  <th>Cumulative Interest</th>
-                  <th>Closing Balance</th>
-                </tr>
-              </thead>
-              <tbody id="ledgerBody"></tbody>
-            </table>
-          </div>
-        </section>
-      </section>
-    </main>
-
-    <!-- STICKY MOBILE SUMMARY BAR -->
-    <div class="mobile-sticky-bar" aria-label="Mobile Quick Summary">
-      <div class="mobile-bar-stats">
-        <div>
-          <div class="mobile-stat-label" id="mobileMaturityLabel">
-            Maturity Value
-          </div>
-          <div class="mobile-stat-val" id="mobileMaturityVal">₹62,143</div>
+      <!-- 5. Tax / TDS Slab -->
+      <div class="control-group">
+        <div class="control-label-row">
+          <span class="control-label">Tax / TDS on Interest</span>
+          <span class="control-hint" id="taxStatusLabel">No Tax Deducted</span>
         </div>
-        <div>
-          <div class="mobile-stat-label">Interest</div>
-          <div
-            class="mobile-stat-val"
-            id="mobileInterestVal"
-            style="color: #6ee7b7"
-          >
-            +₹2,143
+        <div class="tax-grid" role="group" aria-label="Tax Slab Presets">
+          <button type="button" class="tax-btn active" data-tax="0">0% (None)</button>
+          <button type="button" class="tax-btn" data-tax="10">10% TDS</button>
+          <button type="button" class="tax-btn" data-tax="20">20% Slab</button>
+          <button type="button" class="tax-btn" data-tax="custom">Custom %</button>
+        </div>
+        <div class="custom-tax-box" id="customTaxBox">
+          <div class="input-wrapper">
+            <input type="number" id="customTaxInput" class="text-input" min="0" max="50" step="0.5" value="30" placeholder="Enter tax %" />
+            <span class="input-suffix">%</span>
           </div>
         </div>
       </div>
-      <button type="button" class="mobile-jump-btn" id="mobileJumpChartBtn">
-        View Graph &uarr;
-      </button>
-    </div>
+    </aside>
 
-    <!-- ========================================================================
+    <!-- RIGHT DASHBOARD AREA -->
+    <section class="dashboard-stack">
+      <!-- 4 Uniform KPI Summary Cards -->
+      <div class="kpi-grid">
+        <article class="kpi-card highlight">
+          <div>
+            <div class="kpi-label" id="kpi1Label">Final Maturity Value</div>
+            <div class="kpi-value" id="kpiMaturity">₹62,143</div>
+          </div>
+          <div class="kpi-sub" id="kpiMaturitySub">Principal: ₹60,000 + Int: ₹2,143</div>
+        </article>
+
+        <article class="kpi-card">
+          <div>
+            <div class="kpi-label">Total Interest Earned</div>
+            <div class="kpi-value" id="kpiInterest">₹2,143</div>
+          </div>
+          <div class="kpi-sub" id="kpiInterestSub">Absolute Gain: <span class="badge-gain">+3.57%</span></div>
+        </article>
+
+        <article class="kpi-card slate-accent">
+          <div>
+            <div class="kpi-label" id="kpi3Label">Total Principal Invested</div>
+            <div class="kpi-value" id="kpiPrincipal">₹60,000</div>
+          </div>
+          <div class="kpi-sub" id="kpiPrincipalSub">12 installments × ₹5,000/mo</div>
+        </article>
+
+        <article class="kpi-card teal-accent">
+          <div>
+            <div class="kpi-label">Post-Tax Net Maturity</div>
+            <div class="kpi-value" id="kpiPostTax">₹62,143</div>
+          </div>
+          <div class="kpi-sub" id="kpiPostTaxSub">Net Gain: +₹2,143 | Tax: ₹0</div>
+        </article>
+      </div>
+
+      <!-- Interactive Canvas Chart Card -->
+      <section class="panel-card" id="chartSection">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title" id="chartTitle">RD Growth Trajectory (Principal vs. Compound Interest)</h2>
+            <p class="panel-subtitle" id="chartSubtitle">Hover or drag across bars to inspect quarterly interest acceleration</p>
+          </div>
+          <div class="tab-group" role="tablist" aria-label="Chart View Mode">
+            <button type="button" class="tab-btn active" id="tabTimelineBtn" role="tab" aria-selected="true">Growth Timeline</button>
+            <button type="button" class="tab-btn" id="tabDonutBtn" role="tab" aria-selected="false">Corpus Breakdown</button>
+          </div>
+        </div>
+
+        <div class="chart-legend" id="chartLegend">
+          <div class="legend-item">
+            <span class="legend-swatch" style="background: #0f766e;"></span>
+            <span>Cumulative Principal</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-swatch" style="background: #10b981;"></span>
+            <span>Accrued Compound Interest</span>
+          </div>
+        </div>
+
+        <div class="canvas-wrapper" id="canvasContainer">
+          <canvas id="rdCanvas"></canvas>
+          <div class="chart-tooltip" id="chartTooltip" role="tooltip"></div>
+        </div>
+
+        <div class="formula-callout">
+          <span><strong>Standard RD Formula:</strong> Each installment <em>k</em> compounds for <em>(N &minus; k + 1)</em> months until maturity.</span>
+          <code class="formula-code">M = &Sigma; P &times; (1 + r/n)^(n &times; t_k)</code>
+        </div>
+      </section>
+
+      <!-- Month-by-Month / Quarter-by-Quarter Ledger Card -->
+      <section class="panel-card">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Compounding Schedule &amp; Ledger</h2>
+            <p class="panel-subtitle">See how each installment contributes to quarterly interest acceleration</p>
+          </div>
+          <div class="table-actions">
+            <div class="tab-group" role="tablist" aria-label="Schedule Granularity">
+              <button type="button" class="tab-btn active" id="ledgerMonthlyBtn">Monthly</button>
+              <button type="button" class="tab-btn" id="ledgerQuarterlyBtn">Quarterly</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-scroll" id="ledgerWrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Period</th>
+                <th>Deposit Added</th>
+                <th>Cumulative Principal</th>
+                <th>Period Interest</th>
+                <th>Cumulative Interest</th>
+                <th>Closing Balance</th>
+              </tr>
+            </thead>
+            <tbody id="ledgerBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <!-- STICKY MOBILE SUMMARY FOOTER -->
+  <div class="mobile-sticky-bar" aria-label="Mobile Quick Summary">
+    <div class="mobile-bar-stats">
+      <div>
+        <div class="mobile-stat-label" id="mobileMaturityLabel">Maturity Value</div>
+        <div class="mobile-stat-val" id="mobileMaturityVal">₹62,143</div>
+      </div>
+      <div>
+        <div class="mobile-stat-label">Interest</div>
+        <div class="mobile-stat-val" id="mobileInterestVal" style="color: #6ee7b7;">+₹2,143</div>
+      </div>
+    </div>
+    <button type="button" class="mobile-jump-btn" id="mobileJumpChartBtn">View Graph &uarr;</button>
+  </div>
+
+  <!-- ========================================================================
        APPLICATION LOGIC (ZERO EXTERNAL DEPENDENCIES)
        ======================================================================== -->
-    <script>
-      (function () {
-        "use strict";
+  <script>
+    (function () {
+      "use strict";
 
-        /* ----------------------------------------------------------------------
+      /* ----------------------------------------------------------------------
          1. STATE & CONSTANTS
          ---------------------------------------------------------------------- */
-        const DEFAULT_STATE = {
-          mode: "deposit", // "deposit" | "goal"
-          monthlyDeposit: 5000, // ₹
-          targetGoal: 70000, // ₹
-          tenureValue: 12,
-          tenureUnit: "months", // "months" | "years"
-          rate: 6.50, // % p.a.
-          compoundingFreq: 4, // 4 = Quarterly, 12 = Monthly, 2 = Half-Yearly, 1 = Yearly
-          taxMode: "0", // "0" | "10" | "20" | "custom"
-          customTaxRate: 30,
-          activeTab: "timeline", // "timeline" | "donut"
-          ledgerGranularity: "monthly", // "monthly" | "quarterly"
-          ledgerCollapsed: false,
-        };
+      const DEFAULT_STATE = {
+        mode: "deposit",          // "deposit" | "goal"
+        monthlyDeposit: 5000,     // ₹
+        targetGoal: 70000,        // ₹
+        tenureValue: 12,
+        tenureUnit: "months",     // "months" | "years"
+        rate: 6.50,               // % p.a.
+        compoundingFreq: 4,       // 4 = Quarterly, 12 = Monthly, 2 = Half-Yearly, 1 = Yearly
+        taxMode: "0",             // "0" | "10" | "20" | "custom"
+        customTaxRate: 30,
+        activeTab: "timeline",    // "timeline" | "donut"
+        ledgerGranularity: "monthly" // "monthly" | "quarterly"
+      };
 
-        const PRESETS = {
-          "6m": {
-            mode: "deposit",
-            monthlyDeposit: 5000,
-            tenureValue: 6,
-            tenureUnit: "months",
-            rate: 5.75,
-          },
-          "1y": {
-            mode: "deposit",
-            monthlyDeposit: 5000,
-            tenureValue: 12,
-            tenureUnit: "months",
-            rate: 6.50,
-          },
-          "2y": {
-            mode: "deposit",
-            monthlyDeposit: 5000,
-            tenureValue: 2,
-            tenureUnit: "years",
-            rate: 6.75,
-          },
-          "3y": {
-            mode: "deposit",
-            monthlyDeposit: 5000,
-            tenureValue: 3,
-            tenureUnit: "years",
-            rate: 7.00,
-          },
-          "5y": {
-            mode: "deposit",
-            monthlyDeposit: 5000,
-            tenureValue: 5,
-            tenureUnit: "years",
-            rate: 6.75,
-          },
-          "sinking": {
-            mode: "deposit",
-            monthlyDeposit: 1500,
-            tenureValue: 12,
-            tenureUnit: "months",
-            rate: 6.50,
-          },
-        };
+      const PRESETS = {
+        "6m":      { mode: "deposit", monthlyDeposit: 5000, tenureValue: 6,  tenureUnit: "months", rate: 5.75 },
+        "1y":      { mode: "deposit", monthlyDeposit: 5000, tenureValue: 12, tenureUnit: "months", rate: 6.50 },
+        "2y":      { mode: "deposit", monthlyDeposit: 5000, tenureValue: 2,  tenureUnit: "years",  rate: 6.75 },
+        "3y":      { mode: "deposit", monthlyDeposit: 5000, tenureValue: 3,  tenureUnit: "years",  rate: 7.00 },
+        "5y":      { mode: "deposit", monthlyDeposit: 5000, tenureValue: 5,  tenureUnit: "years",  rate: 6.75 },
+        "sinking": { mode: "deposit", monthlyDeposit: 1500, tenureValue: 12, tenureUnit: "months", rate: 6.50 }
+      };
 
-        let state = { ...DEFAULT_STATE };
-        let simResult = null;
-        let chartGeometry = {
-          bars: [],
-          donutSlices: [],
-          centerX: 0,
-          centerY: 0,
-          outerR: 0,
-          innerR: 0,
-        };
-        let hoveredIndex = -1;
+      let state = { ...DEFAULT_STATE };
+      let simResult = null;
+      let chartGeometry = { bars: [], donutSlices: [], centerX: 0, centerY: 0, outerR: 0, innerR: 0 };
+      let hoveredIndex = -1;
 
-        /* ----------------------------------------------------------------------
+      /* ----------------------------------------------------------------------
          2. DOM REFERENCES
          ---------------------------------------------------------------------- */
-        const els = {
-          presetPills: document.querySelectorAll(".preset-pill"),
-          resetBtn: document.getElementById("resetDefaultsBtn"),
-          modeDepositBtn: document.getElementById("modeDepositBtn"),
-          modeGoalBtn: document.getElementById("modeGoalBtn"),
-          depositInputGroup: document.getElementById("depositInputGroup"),
-          goalInputGroup: document.getElementById("goalInputGroup"),
-          monthlyDepositInput: document.getElementById("monthlyDepositInput"),
-          depositWarning: document.getElementById("depositWarning"),
-          depositChips: document.querySelectorAll("#depositChips .chip-btn"),
-          targetGoalInput: document.getElementById("targetGoalInput"),
-          goalWarning: document.getElementById("goalWarning"),
-          goalChips: document.querySelectorAll("#goalChips .chip-btn"),
-          tenureInput: document.getElementById("tenureInput"),
-          tenureUnit: document.getElementById("tenureUnit"),
-          tenureEquivalent: document.getElementById("tenureEquivalent"),
-          tenureWarning: document.getElementById("tenureWarning"),
-          rateSlider: document.getElementById("rateSlider"),
-          rateInput: document.getElementById("rateInput"),
-          rateWarning: document.getElementById("rateWarning"),
-          effectiveYieldBadge: document.getElementById("effectiveYieldBadge"),
-          compoundingSelect: document.getElementById("compoundingSelect"),
-          taxBtns: document.querySelectorAll(".tax-btn"),
-          taxStatusLabel: document.getElementById("taxStatusLabel"),
-          customTaxBox: document.getElementById("customTaxBox"),
-          customTaxInput: document.getElementById("customTaxInput"),
+      const els = {
+        presetPills: document.querySelectorAll(".preset-pill"),
+        resetBtn: document.getElementById("resetDefaultsBtn"),
+        modeDepositBtn: document.getElementById("modeDepositBtn"),
+        modeGoalBtn: document.getElementById("modeGoalBtn"),
+        depositInputGroup: document.getElementById("depositInputGroup"),
+        goalInputGroup: document.getElementById("goalInputGroup"),
+        monthlyDepositInput: document.getElementById("monthlyDepositInput"),
+        depositWarning: document.getElementById("depositWarning"),
+        depositChips: document.querySelectorAll("#depositChips .chip-btn"),
+        targetGoalInput: document.getElementById("targetGoalInput"),
+        goalWarning: document.getElementById("goalWarning"),
+        goalChips: document.querySelectorAll("#goalChips .chip-btn"),
+        tenureInput: document.getElementById("tenureInput"),
+        tenureUnit: document.getElementById("tenureUnit"),
+        tenureEquivalent: document.getElementById("tenureEquivalent"),
+        tenureWarning: document.getElementById("tenureWarning"),
+        rateSlider: document.getElementById("rateSlider"),
+        rateInput: document.getElementById("rateInput"),
+        rateWarning: document.getElementById("rateWarning"),
+        effectiveYieldBadge: document.getElementById("effectiveYieldBadge"),
+        compoundingSelect: document.getElementById("compoundingSelect"),
+        taxBtns: document.querySelectorAll(".tax-btn"),
+        taxStatusLabel: document.getElementById("taxStatusLabel"),
+        customTaxBox: document.getElementById("customTaxBox"),
+        customTaxInput: document.getElementById("customTaxInput"),
 
-          // KPIs
-          kpi1Label: document.getElementById("kpi1Label"),
-          kpiMaturity: document.getElementById("kpiMaturity"),
-          kpiMaturitySub: document.getElementById("kpiMaturitySub"),
-          kpiInterest: document.getElementById("kpiInterest"),
-          kpiInterestSub: document.getElementById("kpiInterestSub"),
-          kpi3Label: document.getElementById("kpi3Label"),
-          kpiPrincipal: document.getElementById("kpiPrincipal"),
-          kpiPrincipalSub: document.getElementById("kpiPrincipalSub"),
-          kpiPostTax: document.getElementById("kpiPostTax"),
-          kpiPostTaxSub: document.getElementById("kpiPostTaxSub"),
+        // KPIs
+        kpi1Label: document.getElementById("kpi1Label"),
+        kpiMaturity: document.getElementById("kpiMaturity"),
+        kpiMaturitySub: document.getElementById("kpiMaturitySub"),
+        kpiInterest: document.getElementById("kpiInterest"),
+        kpiInterestSub: document.getElementById("kpiInterestSub"),
+        kpi3Label: document.getElementById("kpi3Label"),
+        kpiPrincipal: document.getElementById("kpiPrincipal"),
+        kpiPrincipalSub: document.getElementById("kpiPrincipalSub"),
+        kpiPostTax: document.getElementById("kpiPostTax"),
+        kpiPostTaxSub: document.getElementById("kpiPostTaxSub"),
 
-          // Chart
-          chartSection: document.getElementById("chartSection"),
-          chartTitle: document.getElementById("chartTitle"),
-          chartSubtitle: document.getElementById("chartSubtitle"),
-          tabTimelineBtn: document.getElementById("tabTimelineBtn"),
-          tabDonutBtn: document.getElementById("tabDonutBtn"),
-          chartLegend: document.getElementById("chartLegend"),
-          canvasContainer: document.getElementById("canvasContainer"),
-          canvas: document.getElementById("rdCanvas"),
-          tooltip: document.getElementById("chartTooltip"),
+        // Chart
+        chartSection: document.getElementById("chartSection"),
+        chartTitle: document.getElementById("chartTitle"),
+        chartSubtitle: document.getElementById("chartSubtitle"),
+        tabTimelineBtn: document.getElementById("tabTimelineBtn"),
+        tabDonutBtn: document.getElementById("tabDonutBtn"),
+        chartLegend: document.getElementById("chartLegend"),
+        canvasContainer: document.getElementById("canvasContainer"),
+        canvas: document.getElementById("rdCanvas"),
+        tooltip: document.getElementById("chartTooltip"),
 
-          // Ledger
-          ledgerMonthlyBtn: document.getElementById("ledgerMonthlyBtn"),
-          ledgerQuarterlyBtn: document.getElementById("ledgerQuarterlyBtn"),
-          toggleLedgerBtn: document.getElementById("toggleLedgerBtn"),
-          ledgerWrapper: document.getElementById("ledgerWrapper"),
-          ledgerBody: document.getElementById("ledgerBody"),
+        // Ledger
+        ledgerMonthlyBtn: document.getElementById("ledgerMonthlyBtn"),
+        ledgerQuarterlyBtn: document.getElementById("ledgerQuarterlyBtn"),
+        ledgerWrapper: document.getElementById("ledgerWrapper"),
+        ledgerBody: document.getElementById("ledgerBody"),
 
-          // Mobile Sticky Footer
-          mobileMaturityLabel: document.getElementById("mobileMaturityLabel"),
-          mobileMaturityVal: document.getElementById("mobileMaturityVal"),
-          mobileInterestVal: document.getElementById("mobileInterestVal"),
-          mobileJumpChartBtn: document.getElementById("mobileJumpChartBtn"),
-        };
+        // Mobile Sticky Footer
+        mobileMaturityLabel: document.getElementById("mobileMaturityLabel"),
+        mobileMaturityVal: document.getElementById("mobileMaturityVal"),
+        mobileInterestVal: document.getElementById("mobileInterestVal"),
+        mobileJumpChartBtn: document.getElementById("mobileJumpChartBtn")
+      };
 
-        /* ----------------------------------------------------------------------
+      /* ----------------------------------------------------------------------
          3. FORMATTING & PARSING UTILITIES
          ---------------------------------------------------------------------- */
-        const inrFormatter = new Intl.NumberFormat("en-IN", {
-          maximumFractionDigits: 0,
-        });
+      const inrFormatter = new Intl.NumberFormat("en-IN", {
+        maximumFractionDigits: 0
+      });
 
-        function formatINR(num) {
-          if (!isFinite(num)) return "₹0";
-          return "₹" + inrFormatter.format(Math.round(num));
+      function formatINR(num) {
+        if (!isFinite(num)) return "₹0";
+        return "₹" + inrFormatter.format(Math.round(num));
+      }
+
+      function formatNumberCommas(num) {
+        if (!isFinite(num)) return "";
+        return inrFormatter.format(Math.round(num));
+      }
+
+      function parseNumericString(str) {
+        const cleaned = String(str).replace(/[^0-9.]/g, "");
+        const val = parseFloat(cleaned);
+        return isNaN(val) ? 0 : val;
+      }
+
+      function getTotalMonths() {
+        const raw = Math.round(Number(state.tenureValue) || 12);
+        const months = state.tenureUnit === "years" ? raw * 12 : raw;
+        return Math.min(120, Math.max(6, months));
+      }
+
+      function getActiveTaxRate() {
+        if (state.taxMode === "custom") {
+          const val = parseFloat(state.customTaxRate);
+          return isNaN(val) ? 0 : Math.min(50, Math.max(0, val));
         }
+        return parseFloat(state.taxMode) || 0;
+      }
 
-        function formatNumberCommas(num) {
-          if (!isFinite(num)) return "";
-          return inrFormatter.format(Math.round(num));
-        }
-
-        function parseNumericString(str) {
-          const cleaned = String(str).replace(/[^0-9.]/g, "");
-          const val = parseFloat(cleaned);
-          return isNaN(val) ? 0 : val;
-        }
-
-        function getTotalMonths() {
-          const raw = Math.round(Number(state.tenureValue) || 12);
-          const months = state.tenureUnit === "years" ? raw * 12 : raw;
-          return Math.min(120, Math.max(6, months));
-        }
-
-        function getActiveTaxRate() {
-          if (state.taxMode === "custom") {
-            const val = parseFloat(state.customTaxRate);
-            return isNaN(val) ? 0 : Math.min(50, Math.max(0, val));
-          }
-          return parseFloat(state.taxMode) || 0;
-        }
-
-        /* ----------------------------------------------------------------------
+      /* ----------------------------------------------------------------------
          4. CORE RD MATHEMATICAL ENGINE
          ---------------------------------------------------------------------- */
-        /**
-         * Computes exact Indian bank RD growth across N months.
-         * Formula: At any elapsed month m (1..N), installment k (1..m) has been
-         * invested for (m - k + 1) months = (m - k + 1) / 12 years.
-         * Value of installment k at month m = P * (1 + r / n)^(n * (m - k + 1) / 12)
-         */
-        function calculateRDSchedule(
-          monthlyP,
-          totalMonths,
-          annualRatePct,
-          freq,
-        ) {
-          const r = annualRatePct / 100;
-          const n = freq;
-          const monthlyRows = [];
+      /**
+       * Computes exact Indian bank RD growth across N months.
+       * Formula: At any elapsed month m (1..N), installment k (1..m) has been
+       * invested for (m - k + 1) months = (m - k + 1) / 12 years.
+       * Value of installment k at month m = P * (1 + r / n)^(n * (m - k + 1) / 12)
+       */
+      function calculateRDSchedule(monthlyP, totalMonths, annualRatePct, freq) {
+        const r = annualRatePct / 100;
+        const n = freq;
+        const monthlyRows = [];
 
-          let prevBalance = 0;
+        let prevBalance = 0;
 
-          for (let m = 1; m <= totalMonths; m++) {
-            let totalValueAtM = 0;
-            for (let k = 1; k <= m; k++) {
-              const monthsHeld = m - k + 1;
-              const yearsHeld = monthsHeld / 12;
-              const installmentMaturity = monthlyP *
-                Math.pow(1 + r / n, n * yearsHeld);
-              totalValueAtM += installmentMaturity;
-            }
+        for (let m = 1; m <= totalMonths; m++) {
+          let totalValueAtM = 0;
+          for (let k = 1; k <= m; k++) {
+            const monthsHeld = m - k + 1;
+            const yearsHeld = monthsHeld / 12;
+            const installmentMaturity = monthlyP * Math.pow(1 + r / n, n * yearsHeld);
+            totalValueAtM += installmentMaturity;
+          }
 
-            const cumulativePrincipal = monthlyP * m;
-            const cumulativeInterest = Math.max(
-              0,
-              totalValueAtM - cumulativePrincipal,
-            );
-            const periodInterest = Math.max(
-              0,
-              totalValueAtM - prevBalance - monthlyP,
-            );
+          const cumulativePrincipal = monthlyP * m;
+          const cumulativeInterest = Math.max(0, totalValueAtM - cumulativePrincipal);
+          const periodInterest = Math.max(0, totalValueAtM - prevBalance - monthlyP);
 
-            monthlyRows.push({
-              month: m,
-              label: "Month " + m,
-              depositAdded: monthlyP,
-              cumulativePrincipal: cumulativePrincipal,
-              periodInterest: periodInterest,
-              cumulativeInterest: cumulativeInterest,
-              closingBalance: totalValueAtM,
-              isQuarterEnd: m % 3 === 0 || m === totalMonths,
+          monthlyRows.push({
+            month: m,
+            label: "Month " + m,
+            depositAdded: monthlyP,
+            cumulativePrincipal: cumulativePrincipal,
+            periodInterest: periodInterest,
+            cumulativeInterest: cumulativeInterest,
+            closingBalance: totalValueAtM,
+            isQuarterEnd: m % 3 === 0 || m === totalMonths
+          });
+
+          prevBalance = totalValueAtM;
+        }
+
+        // Build quarterly aggregated rows
+        const quarterlyRows = [];
+        let prevQBalance = 0;
+        let qPrincipalAdded = 0;
+        let qCounter = 0;
+
+        for (let i = 0; i < monthlyRows.length; i++) {
+          const row = monthlyRows[i];
+          qPrincipalAdded += row.depositAdded;
+
+          if (row.month % 3 === 0 || row.month === totalMonths) {
+            qCounter++;
+            const qInterest = Math.max(0, row.closingBalance - prevQBalance - qPrincipalAdded);
+            quarterlyRows.push({
+              quarter: qCounter,
+              month: row.month,
+              label: `Q${qCounter} (Mo ${row.month})`,
+              depositAdded: qPrincipalAdded,
+              cumulativePrincipal: row.cumulativePrincipal,
+              periodInterest: qInterest,
+              cumulativeInterest: row.cumulativeInterest,
+              closingBalance: row.closingBalance,
+              isQuarterEnd: true
             });
-
-            prevBalance = totalValueAtM;
+            prevQBalance = row.closingBalance;
+            qPrincipalAdded = 0;
           }
-
-          // Build quarterly aggregated rows
-          const quarterlyRows = [];
-          let prevQBalance = 0;
-          let qPrincipalAdded = 0;
-          let qCounter = 0;
-
-          for (let i = 0; i < monthlyRows.length; i++) {
-            const row = monthlyRows[i];
-            qPrincipalAdded += row.depositAdded;
-
-            if (row.month % 3 === 0 || row.month === totalMonths) {
-              qCounter++;
-              const qInterest = Math.max(
-                0,
-                row.closingBalance - prevQBalance - qPrincipalAdded,
-              );
-              quarterlyRows.push({
-                quarter: qCounter,
-                month: row.month,
-                label: row.month % 3 === 0
-                  ? `Q${qCounter} (Mo ${row.month})`
-                  : `Q${qCounter} (Mo ${row.month})`,
-                depositAdded: qPrincipalAdded,
-                cumulativePrincipal: row.cumulativePrincipal,
-                periodInterest: qInterest,
-                cumulativeInterest: row.cumulativeInterest,
-                closingBalance: row.closingBalance,
-                isQuarterEnd: true,
-              });
-              prevQBalance = row.closingBalance;
-              qPrincipalAdded = 0;
-            }
-          }
-
-          const finalRow = monthlyRows[monthlyRows.length - 1];
-          return {
-            monthlyInstallment: monthlyP,
-            totalMonths: totalMonths,
-            totalPrincipal: finalRow.cumulativePrincipal,
-            totalInterest: finalRow.cumulativeInterest,
-            maturityValue: finalRow.closingBalance,
-            monthlyRows: monthlyRows,
-            quarterlyRows: quarterlyRows,
-          };
         }
 
-        /**
-         * Reverse Goal Solver: Finds required monthly RD installment P
-         * to hit targetMaturity in totalMonths at annualRatePct.
-         */
-        function solveRequiredMonthlyDeposit(
-          targetMaturity,
-          totalMonths,
-          annualRatePct,
-          freq,
-        ) {
-          const unitSim = calculateRDSchedule(
-            1,
-            totalMonths,
-            annualRatePct,
-            freq,
-          );
-          const factor = unitSim.maturityValue;
-          if (!factor || factor <= 0) return targetMaturity / totalMonths;
-          return Math.max(100, targetMaturity / factor);
-        }
+        const finalRow = monthlyRows[monthlyRows.length - 1];
+        return {
+          monthlyInstallment: monthlyP,
+          totalMonths: totalMonths,
+          totalPrincipal: finalRow.cumulativePrincipal,
+          totalInterest: finalRow.cumulativeInterest,
+          maturityValue: finalRow.closingBalance,
+          monthlyRows: monthlyRows,
+          quarterlyRows: quarterlyRows
+        };
+      }
 
-        /* ----------------------------------------------------------------------
+      /**
+       * Reverse Goal Solver: Finds required monthly RD installment P
+       * to hit targetMaturity in totalMonths at annualRatePct.
+       */
+      function solveRequiredMonthlyDeposit(targetMaturity, totalMonths, annualRatePct, freq) {
+        const unitSim = calculateRDSchedule(1, totalMonths, annualRatePct, freq);
+        const factor = unitSim.maturityValue;
+        if (!factor || factor <= 0) return targetMaturity / totalMonths;
+        return Math.max(100, targetMaturity / factor);
+      }
+
+      /* ----------------------------------------------------------------------
          5. UPDATE PIPELINE (CALCULATION -> DOM -> CHARTS)
          ---------------------------------------------------------------------- */
-        function recalculateAndRender() {
-          const totalMonths = getTotalMonths();
-          const rate = Math.min(15, Math.max(1, Number(state.rate) || 6.5));
-          const freq = Number(state.compoundingFreq) || 4;
-          const taxPct = getActiveTaxRate();
+      function recalculateAndRender() {
+        const totalMonths = getTotalMonths();
+        const rate = Math.min(15, Math.max(1, Number(state.rate) || 6.5));
+        const freq = Number(state.compoundingFreq) || 4;
+        const taxPct = getActiveTaxRate();
 
-          // Update tenure helper readout
-          const yrs = (totalMonths / 12).toFixed(
-            totalMonths % 12 === 0 ? 0 : 1,
-          );
-          els.tenureEquivalent.textContent = `${totalMonths} Months (${yrs} ${
-            yrs === "1" ? "Yr" : "Yrs"
-          })`;
+        // Update tenure helper readout
+        const yrs = (totalMonths / 12).toFixed(totalMonths % 12 === 0 ? 0 : 1);
+        els.tenureEquivalent.textContent = `${totalMonths} Months (${yrs} ${yrs === "1" ? "Yr" : "Yrs"})`;
 
-          // Effective annualized compounding yield badge
-          const effYield = (Math.pow(1 + (rate / 100) / freq, freq) - 1) * 100;
-          els.effectiveYieldBadge.textContent = `Effective ${
-            effYield.toFixed(2)
-          }% p.a.`;
+        // Effective annualized compounding yield badge
+        const effYield = (Math.pow(1 + (rate / 100) / freq, freq) - 1) * 100;
+        els.effectiveYieldBadge.textContent = `Effective ${effYield.toFixed(2)}% p.a.`;
 
-          // Determine Monthly Installment based on active mode
-          let monthlyP = Math.max(100, Number(state.monthlyDeposit) || 5000);
-          if (state.mode === "goal") {
-            const goalAmt = Math.max(1000, Number(state.targetGoal) || 70000);
-            monthlyP = solveRequiredMonthlyDeposit(
-              goalAmt,
-              totalMonths,
-              rate,
-              freq,
-            );
-          }
-
-          simResult = calculateRDSchedule(monthlyP, totalMonths, rate, freq);
-
-          const maturity = Math.round(simResult.maturityValue);
-          const principal = Math.round(simResult.totalPrincipal);
-          const interest = Math.max(0, maturity - principal);
-          const taxAmount = Math.round(interest * (taxPct / 100));
-          const netInterest = Math.max(0, interest - taxAmount);
-          const postTaxMaturity = principal + netInterest;
-          const absReturnPct = principal > 0
-            ? ((interest / principal) * 100).toFixed(2)
-            : "0.00";
-
-          // Update KPI Cards
-          if (state.mode === "goal") {
-            els.kpi1Label.textContent = "Required Monthly RD";
-            els.kpiMaturity.textContent = formatINR(monthlyP) + " / mo";
-            els.kpiMaturitySub.textContent = `Target Maturity: ${
-              formatINR(maturity)
-            }`;
-
-            els.kpi3Label.textContent = "Total Principal Invested";
-            els.kpiPrincipal.textContent = formatINR(principal);
-            els.kpiPrincipalSub.textContent = `${totalMonths} months @ ${
-              rate.toFixed(2)
-            }% p.a.`;
-          } else {
-            els.kpi1Label.textContent = "Final Maturity Value";
-            els.kpiMaturity.textContent = formatINR(maturity);
-            els.kpiMaturitySub.textContent = `Principal: ${
-              formatINR(principal)
-            } + Int: ${formatINR(interest)}`;
-
-            els.kpi3Label.textContent = "Total Principal Invested";
-            els.kpiPrincipal.textContent = formatINR(principal);
-            els.kpiPrincipalSub.textContent = `${totalMonths} installments × ${
-              formatINR(monthlyP)
-            }/mo`;
-          }
-
-          els.kpiInterest.textContent = formatINR(interest);
-          els.kpiInterestSub.innerHTML =
-            `Absolute Gain: <span class="badge-gain">+${absReturnPct}%</span>`;
-
-          els.kpiPostTax.textContent = formatINR(postTaxMaturity);
-          els.kpiPostTaxSub.textContent = `Net Gain: +${
-            formatINR(netInterest)
-          } | Tax: ${formatINR(taxAmount)}`;
-
-          // Tax header label
-          els.taxStatusLabel.textContent = taxPct === 0
-            ? "No Tax Deducted"
-            : `${taxPct}% Tax (${formatINR(taxAmount)})`;
-
-          // Sticky Mobile Footer
-          if (state.mode === "goal") {
-            els.mobileMaturityLabel.textContent = "Required Monthly RD";
-            els.mobileMaturityVal.textContent = formatINR(monthlyP) + "/mo";
-          } else {
-            els.mobileMaturityLabel.textContent = "Maturity Value";
-            els.mobileMaturityVal.textContent = formatINR(maturity);
-          }
-          els.mobileInterestVal.textContent = "+" + formatINR(interest);
-
-          // Render Ledger & Chart
-          renderLedgerTable();
-          drawChart();
+        // Determine Monthly Installment based on active mode
+        let monthlyP = Math.max(100, Number(state.monthlyDeposit) || 5000);
+        if (state.mode === "goal") {
+          const goalAmt = Math.max(1000, Number(state.targetGoal) || 70000);
+          monthlyP = solveRequiredMonthlyDeposit(goalAmt, totalMonths, rate, freq);
         }
 
-        /* ----------------------------------------------------------------------
+        simResult = calculateRDSchedule(monthlyP, totalMonths, rate, freq);
+
+        const maturity = Math.round(simResult.maturityValue);
+        const principal = Math.round(simResult.totalPrincipal);
+        const interest = Math.max(0, maturity - principal);
+        const taxAmount = Math.round(interest * (taxPct / 100));
+        const netInterest = Math.max(0, interest - taxAmount);
+        const postTaxMaturity = principal + netInterest;
+        const absReturnPct = principal > 0 ? ((interest / principal) * 100).toFixed(2) : "0.00";
+
+        // Update KPI Cards
+        if (state.mode === "goal") {
+          els.kpi1Label.textContent = "Required Monthly RD";
+          els.kpiMaturity.textContent = formatINR(monthlyP) + " / mo";
+          els.kpiMaturitySub.textContent = `Target Maturity: ${formatINR(maturity)}`;
+
+          els.kpi3Label.textContent = "Total Principal Invested";
+          els.kpiPrincipal.textContent = formatINR(principal);
+          els.kpiPrincipalSub.textContent = `${totalMonths} months @ ${rate.toFixed(2)}% p.a.`;
+        } else {
+          els.kpi1Label.textContent = "Final Maturity Value";
+          els.kpiMaturity.textContent = formatINR(maturity);
+          els.kpiMaturitySub.textContent = `Principal: ${formatINR(principal)} + Int: ${formatINR(interest)}`;
+
+          els.kpi3Label.textContent = "Total Principal Invested";
+          els.kpiPrincipal.textContent = formatINR(principal);
+          els.kpiPrincipalSub.textContent = `${totalMonths} installments × ${formatINR(monthlyP)}/mo`;
+        }
+
+        els.kpiInterest.textContent = formatINR(interest);
+        els.kpiInterestSub.innerHTML = `Absolute Gain: <span class="badge-gain">+${absReturnPct}%</span>`;
+
+        els.kpiPostTax.textContent = formatINR(postTaxMaturity);
+        els.kpiPostTaxSub.textContent = `Net Gain: +${formatINR(netInterest)} | Tax: ${formatINR(taxAmount)}`;
+
+        // Tax header label
+        els.taxStatusLabel.textContent = taxPct === 0 ? "No Tax Deducted" : `${taxPct}% Tax (${formatINR(taxAmount)})`;
+
+        // Sticky Mobile Footer
+        if (state.mode === "goal") {
+          els.mobileMaturityLabel.textContent = "Required Monthly RD";
+          els.mobileMaturityVal.textContent = formatINR(monthlyP) + "/mo";
+        } else {
+          els.mobileMaturityLabel.textContent = "Maturity Value";
+          els.mobileMaturityVal.textContent = formatINR(maturity);
+        }
+        els.mobileInterestVal.textContent = "+" + formatINR(interest);
+
+        // Render Ledger & Chart
+        renderLedgerTable();
+        drawChart();
+      }
+
+      /* ----------------------------------------------------------------------
          6. LEDGER TABLE RENDERER
          ---------------------------------------------------------------------- */
-        function renderLedgerTable() {
-          if (!simResult) return;
-          const rows = state.ledgerGranularity === "quarterly"
-            ? simResult.quarterlyRows
-            : simResult.monthlyRows;
-          const frag = document.createDocumentFragment();
+      function renderLedgerTable() {
+        if (!simResult) return;
+        const rows = state.ledgerGranularity === "quarterly" ? simResult.quarterlyRows : simResult.monthlyRows;
+        const frag = document.createDocumentFragment();
 
-          rows.forEach((r) => {
-            const tr = document.createElement("tr");
-            if (r.isQuarterEnd && state.ledgerGranularity === "monthly") {
-              tr.classList.add("quarter-milestone");
-            }
-            tr.innerHTML = `
+        rows.forEach((r) => {
+          const tr = document.createElement("tr");
+          if (r.isQuarterEnd && state.ledgerGranularity === "monthly") {
+            tr.classList.add("quarter-milestone");
+          }
+          tr.innerHTML = `
             <td>${r.label}</td>
             <td>${formatINR(r.depositAdded)}</td>
             <td>${formatINR(r.cumulativePrincipal)}</td>
@@ -1927,37 +1663,35 @@
             <td class="interest-cell">${formatINR(r.cumulativeInterest)}</td>
             <td class="closing-cell">${formatINR(r.closingBalance)}</td>
           `;
-            frag.appendChild(tr);
-          });
+          frag.appendChild(tr);
+        });
 
-          els.ledgerBody.innerHTML = "";
-          els.ledgerBody.appendChild(frag);
-        }
+        els.ledgerBody.innerHTML = "";
+        els.ledgerBody.appendChild(frag);
+      }
 
-        /* ----------------------------------------------------------------------
+      /* ----------------------------------------------------------------------
          7. INTERACTIVE HTML5 CANVAS CHARTS (TIMELINE + CORPUS DONUT)
          ---------------------------------------------------------------------- */
-        function resizeCanvas() {
-          const rect = els.canvasContainer.getBoundingClientRect();
-          const dpr = Math.min(window.devicePixelRatio || 1, 2);
-          els.canvas.width = Math.max(280, Math.floor(rect.width * dpr));
-          els.canvas.height = Math.max(260, Math.floor(rect.height * dpr));
-          const ctx = els.canvas.getContext("2d");
-          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-          return { width: rect.width, height: rect.height, ctx };
-        }
+      function resizeCanvas() {
+        const rect = els.canvasContainer.getBoundingClientRect();
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        els.canvas.width = Math.max(280, Math.floor(rect.width * dpr));
+        els.canvas.height = Math.max(260, Math.floor(rect.height * dpr));
+        const ctx = els.canvas.getContext("2d");
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        return { width: rect.width, height: rect.height, ctx };
+      }
 
-        function drawChart() {
-          if (!simResult) return;
-          const { width, height, ctx } = resizeCanvas();
-          ctx.clearRect(0, 0, width, height);
+      function drawChart() {
+        if (!simResult) return;
+        const { width, height, ctx } = resizeCanvas();
+        ctx.clearRect(0, 0, width, height);
 
-          if (state.activeTab === "timeline") {
-            els.chartTitle.textContent =
-              "RD Growth Trajectory (Principal vs. Compound Interest)";
-            els.chartSubtitle.textContent =
-              "Hover or drag across bars to inspect quarterly interest acceleration";
-            els.chartLegend.innerHTML = `
+        if (state.activeTab === "timeline") {
+          els.chartTitle.textContent = "RD Growth Trajectory (Principal vs. Compound Interest)";
+          els.chartSubtitle.textContent = "Hover or drag across bars to inspect quarterly interest acceleration";
+          els.chartLegend.innerHTML = `
             <div class="legend-item">
               <span class="legend-swatch" style="background: #0f766e;"></span>
               <span>Cumulative Principal</span>
@@ -1967,13 +1701,11 @@
               <span>Accrued Compound Interest</span>
             </div>
           `;
-            drawTimelineChart(ctx, width, height);
-          } else {
-            els.chartTitle.textContent =
-              "Maturity Corpus Breakdown (Principal vs. Net Interest)";
-            els.chartSubtitle.textContent =
-              "Hover or tap a ring segment to inspect exact amount & share";
-            els.chartLegend.innerHTML = `
+          drawTimelineChart(ctx, width, height);
+        } else {
+          els.chartTitle.textContent = "Maturity Corpus Breakdown (Principal vs. Net Interest)";
+          els.chartSubtitle.textContent = "Hover or tap a ring segment to inspect exact amount & share";
+          els.chartLegend.innerHTML = `
             <div class="legend-item">
               <span class="legend-swatch" style="background: #0f766e;"></span>
               <span>Total Principal Invested</span>
@@ -1983,732 +1715,590 @@
               <span>Net Interest Earned (Post-Tax)</span>
             </div>
           `;
-            drawDonutChart(ctx, width, height);
-          }
+          drawDonutChart(ctx, width, height);
         }
+      }
 
-        function formatCompactAxis(val) {
-          if (val >= 10000000) return "₹" + (val / 10000000).toFixed(1) + "Cr";
-          if (val >= 100000) return "₹" + (val / 100000).toFixed(1) + "L";
-          if (val >= 1000) return "₹" + (val / 1000).toFixed(0) + "K";
-          return "₹" + Math.round(val);
-        }
+      function formatCompactAxis(val) {
+        if (val >= 10000000) return "₹" + (val / 10000000).toFixed(1) + "Cr";
+        if (val >= 100000) return "₹" + (val / 100000).toFixed(1) + "L";
+        if (val >= 1000) return "₹" + (val / 1000).toFixed(0) + "K";
+        return "₹" + Math.round(val);
+      }
 
-        function drawTimelineChart(ctx, width, height) {
-          // Use monthly points if <= 24 months, otherwise quarterly points so bars stay legible
-          const series = simResult.totalMonths <= 24
-            ? simResult.monthlyRows
-            : simResult.quarterlyRows;
-          const isQuarterlySeries = simResult.totalMonths > 24;
+      function drawTimelineChart(ctx, width, height) {
+        const series = simResult.totalMonths <= 24 ? simResult.monthlyRows : simResult.quarterlyRows;
+        const isQuarterlySeries = simResult.totalMonths > 24;
 
-          const padLeft = width < 480 ? 50 : 64;
-          const padRight = 16;
-          const padTop = 20;
-          const padBottom = 38;
+        const padLeft = width < 480 ? 50 : 64;
+        const padRight = 16;
+        const padTop = 20;
+        const padBottom = 38;
 
-          const plotW = width - padLeft - padRight;
-          const plotH = height - padTop - padBottom;
+        const plotW = width - padLeft - padRight;
+        const plotH = height - padTop - padBottom;
 
-          const maxVal = Math.max(100, simResult.maturityValue * 1.08);
-          const gridSteps = 4;
+        const maxVal = Math.max(100, simResult.maturityValue * 1.08);
+        const gridSteps = 4;
 
-          // Horizontal gridlines & Y-axis labels
-          ctx.font = "600 11px -apple-system, BlinkMacSystemFont, sans-serif";
-          ctx.textAlign = "right";
-          ctx.textBaseline = "middle";
+        ctx.font = "600 11px -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.textAlign = "right";
+        ctx.textBaseline = "middle";
 
-          for (let i = 0; i <= gridSteps; i++) {
-            const ratio = i / gridSteps;
-            const yVal = maxVal * ratio;
-            const yPos = padTop + plotH - ratio * plotH;
+        for (let i = 0; i <= gridSteps; i++) {
+          const ratio = i / gridSteps;
+          const yVal = maxVal * ratio;
+          const yPos = padTop + plotH - ratio * plotH;
 
-            ctx.strokeStyle = i === 0 ? "#cbd5e1" : "#e2e8f0";
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(padLeft, yPos);
-            ctx.lineTo(width - padRight, yPos);
-            ctx.stroke();
+          ctx.strokeStyle = i === 0 ? "#cbd5e1" : "#e2e8f0";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(padLeft, yPos);
+          ctx.lineTo(width - padRight, yPos);
+          ctx.stroke();
 
-            ctx.fillStyle = "#64748b";
-            ctx.fillText(formatCompactAxis(yVal), padLeft - 8, yPos);
-          }
-
-          // Compute bar slots
-          const count = series.length;
-          const slotW = plotW / count;
-          const barW = Math.max(4, Math.min(34, slotW * 0.68));
-          chartGeometry.bars = [];
-
-          // Determine X-axis label stride
-          const maxLabels = width < 480 ? 6 : 12;
-          const stride = Math.max(1, Math.ceil(count / maxLabels));
-
-          series.forEach((item, idx) => {
-            const xCenter = padLeft + slotW * idx + slotW / 2;
-            const xLeft = xCenter - barW / 2;
-
-            const totalH = (item.closingBalance / maxVal) * plotH;
-            const principalH = (item.cumulativePrincipal / maxVal) * plotH;
-            const interestH = Math.max(0, totalH - principalH);
-
-            const yBottom = padTop + plotH;
-            const yPrincipalTop = yBottom - principalH;
-            const yTotalTop = yBottom - totalH;
-
-            const isHovered = hoveredIndex === idx;
-
-            // Highlight hover column backdrop
-            if (isHovered) {
-              ctx.fillStyle = "rgba(16, 185, 129, 0.09)";
-              ctx.fillRect(padLeft + slotW * idx, padTop, slotW, plotH);
-            }
-
-            // Draw Principal segment (bottom)
-            ctx.fillStyle = isHovered ? "#115e59" : "#0f766e";
-            ctx.fillRect(xLeft, yPrincipalTop, barW, principalH);
-
-            // Draw Interest segment (top) with rounded top corners
-            ctx.fillStyle = isHovered ? "#059669" : "#10b981";
-            if (interestH > 0.5) {
-              const r = Math.min(4, barW / 2, interestH);
-              ctx.beginPath();
-              ctx.moveTo(xLeft, yPrincipalTop);
-              ctx.lineTo(xLeft, yTotalTop + r);
-              ctx.quadraticCurveTo(xLeft, yTotalTop, xLeft + r, yTotalTop);
-              ctx.lineTo(xLeft + barW - r, yTotalTop);
-              ctx.quadraticCurveTo(
-                xLeft + barW,
-                yTotalTop,
-                xLeft + barW,
-                yTotalTop + r,
-              );
-              ctx.lineTo(xLeft + barW, yPrincipalTop);
-              ctx.closePath();
-              ctx.fill();
-            }
-
-            // X-axis label
-            if (idx % stride === 0 || idx === count - 1) {
-              ctx.fillStyle = isHovered ? "#064e3b" : "#64748b";
-              ctx.font = isHovered
-                ? "700 11px sans-serif"
-                : "600 11px sans-serif";
-              ctx.textAlign = "center";
-              ctx.textBaseline = "top";
-              const shortLbl = isQuarterlySeries
-                ? `Q${item.quarter}`
-                : `M${item.month}`;
-              ctx.fillText(shortLbl, xCenter, yBottom + 10);
-            }
-
-            chartGeometry.bars.push({
-              index: idx,
-              xMin: padLeft + slotW * idx,
-              xMax: padLeft + slotW * (idx + 1),
-              xCenter: xCenter,
-              yTop: yTotalTop,
-              data: item,
-            });
-          });
-        }
-
-        function drawDonutChart(ctx, width, height) {
-          const principal = Math.round(simResult.totalPrincipal);
-          const grossInterest = Math.max(
-            0,
-            Math.round(simResult.maturityValue) - principal,
-          );
-          const taxPct = getActiveTaxRate();
-          const taxAmt = Math.round(grossInterest * (taxPct / 100));
-          const netInterest = Math.max(0, grossInterest - taxAmt);
-          const totalNetCorpus = principal + netInterest;
-
-          const centerX = width / 2;
-          const centerY = height / 2;
-          const minDim = Math.min(width, height);
-          const outerR = Math.max(70, minDim * 0.37);
-          const innerR = outerR * 0.62;
-
-          const slices = [
-            {
-              label: "Total Principal Invested",
-              amount: principal,
-              pct: totalNetCorpus > 0
-                ? (principal / totalNetCorpus) * 100
-                : 100,
-              color: "#0f766e",
-              hoverColor: "#115e59",
-            },
-            {
-              label: taxPct > 0
-                ? "Net Interest (Post-Tax)"
-                : "Compound Interest Earned",
-              amount: netInterest,
-              pct: totalNetCorpus > 0
-                ? (netInterest / totalNetCorpus) * 100
-                : 0,
-              color: "#10b981",
-              hoverColor: "#059669",
-            },
-          ];
-
-          chartGeometry.centerX = centerX;
-          chartGeometry.centerY = centerY;
-          chartGeometry.outerR = outerR;
-          chartGeometry.innerR = innerR;
-          chartGeometry.donutSlices = [];
-
-          let startAngle = -Math.PI / 2;
-
-          slices.forEach((slice, idx) => {
-            const sweep = totalNetCorpus > 0
-              ? (slice.amount / totalNetCorpus) * Math.PI * 2
-              : 0;
-            const endAngle = startAngle + sweep;
-            const isHovered = hoveredIndex === idx;
-            const radiusBoost = isHovered ? 6 : 0;
-
-            ctx.beginPath();
-            ctx.arc(
-              centerX,
-              centerY,
-              outerR + radiusBoost,
-              startAngle,
-              endAngle,
-            );
-            ctx.arc(centerX, centerY, innerR, endAngle, startAngle, true);
-            ctx.closePath();
-
-            ctx.fillStyle = isHovered ? slice.hoverColor : slice.color;
-            ctx.fill();
-
-            ctx.strokeStyle = "#ffffff";
-            ctx.lineWidth = 2.5;
-            ctx.stroke();
-
-            chartGeometry.donutSlices.push({
-              index: idx,
-              startAngle,
-              endAngle,
-              data: slice,
-            });
-
-            startAngle = endAngle;
-          });
-
-          // Center Callout Text inside Donut
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
           ctx.fillStyle = "#64748b";
-          ctx.font = "600 11px sans-serif";
-          ctx.fillText(
-            taxPct > 0 ? "NET MATURITY" : "MATURITY VALUE",
-            centerX,
-            centerY - 14,
-          );
-
-          ctx.fillStyle = "#0f172a";
-          ctx.font = "800 18px sans-serif";
-          ctx.fillText(formatINR(totalNetCorpus), centerX, centerY + 8);
+          ctx.fillText(formatCompactAxis(yVal), padLeft - 8, yPos);
         }
 
-        /* ----------------------------------------------------------------------
+        const count = series.length;
+        const slotW = plotW / count;
+        const barW = Math.max(4, Math.min(34, slotW * 0.68));
+        chartGeometry.bars = [];
+
+        const maxLabels = width < 480 ? 6 : 12;
+        const stride = Math.max(1, Math.ceil(count / maxLabels));
+
+        series.forEach((item, idx) => {
+          const xCenter = padLeft + slotW * idx + slotW / 2;
+          const xLeft = xCenter - barW / 2;
+
+          const totalH = (item.closingBalance / maxVal) * plotH;
+          const principalH = (item.cumulativePrincipal / maxVal) * plotH;
+          const interestH = Math.max(0, totalH - principalH);
+
+          const yBottom = padTop + plotH;
+          const yPrincipalTop = yBottom - principalH;
+          const yTotalTop = yBottom - totalH;
+
+          const isHovered = hoveredIndex === idx;
+
+          if (isHovered) {
+            ctx.fillStyle = "rgba(16, 185, 129, 0.09)";
+            ctx.fillRect(padLeft + slotW * idx, padTop, slotW, plotH);
+          }
+
+          ctx.fillStyle = isHovered ? "#115e59" : "#0f766e";
+          ctx.fillRect(xLeft, yPrincipalTop, barW, principalH);
+
+          ctx.fillStyle = isHovered ? "#059669" : "#10b981";
+          if (interestH > 0.5) {
+            const r = Math.min(4, barW / 2, interestH);
+            ctx.beginPath();
+            ctx.moveTo(xLeft, yPrincipalTop);
+            ctx.lineTo(xLeft, yTotalTop + r);
+            ctx.quadraticCurveTo(xLeft, yTotalTop, xLeft + r, yTotalTop);
+            ctx.lineTo(xLeft + barW - r, yTotalTop);
+            ctx.quadraticCurveTo(xLeft + barW, yTotalTop, xLeft + barW, yTotalTop + r);
+            ctx.lineTo(xLeft + barW, yPrincipalTop);
+            ctx.closePath();
+            ctx.fill();
+          }
+
+          if (idx % stride === 0 || idx === count - 1) {
+            ctx.fillStyle = isHovered ? "#064e3b" : "#64748b";
+            ctx.font = isHovered ? "700 11px sans-serif" : "600 11px sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "top";
+            const shortLbl = isQuarterlySeries ? `Q${item.quarter}` : `M${item.month}`;
+            ctx.fillText(shortLbl, xCenter, yBottom + 10);
+          }
+
+          chartGeometry.bars.push({
+            index: idx,
+            xMin: padLeft + slotW * idx,
+            xMax: padLeft + slotW * (idx + 1),
+            xCenter: xCenter,
+            yTop: yTotalTop,
+            data: item
+          });
+        });
+      }
+
+      function drawDonutChart(ctx, width, height) {
+        const principal = Math.round(simResult.totalPrincipal);
+        const grossInterest = Math.max(0, Math.round(simResult.maturityValue) - principal);
+        const taxPct = getActiveTaxRate();
+        const taxAmt = Math.round(grossInterest * (taxPct / 100));
+        const netInterest = Math.max(0, grossInterest - taxAmt);
+        const totalNetCorpus = principal + netInterest;
+
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const minDim = Math.min(width, height);
+        const outerR = Math.max(70, minDim * 0.37);
+        const innerR = outerR * 0.62;
+
+        const slices = [
+          {
+            label: "Total Principal Invested",
+            amount: principal,
+            pct: totalNetCorpus > 0 ? (principal / totalNetCorpus) * 100 : 100,
+            color: "#0f766e",
+            hoverColor: "#115e59"
+          },
+          {
+            label: taxPct > 0 ? "Net Interest (Post-Tax)" : "Compound Interest Earned",
+            amount: netInterest,
+            pct: totalNetCorpus > 0 ? (netInterest / totalNetCorpus) * 100 : 0,
+            color: "#10b981",
+            hoverColor: "#059669"
+          }
+        ];
+
+        chartGeometry.centerX = centerX;
+        chartGeometry.centerY = centerY;
+        chartGeometry.outerR = outerR;
+        chartGeometry.innerR = innerR;
+        chartGeometry.donutSlices = [];
+
+        let startAngle = -Math.PI / 2;
+
+        slices.forEach((slice, idx) => {
+          const sweep = totalNetCorpus > 0 ? (slice.amount / totalNetCorpus) * Math.PI * 2 : 0;
+          const endAngle = startAngle + sweep;
+          const isHovered = hoveredIndex === idx;
+          const radiusBoost = isHovered ? 6 : 0;
+
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, outerR + radiusBoost, startAngle, endAngle);
+          ctx.arc(centerX, centerY, innerR, endAngle, startAngle, true);
+          ctx.closePath();
+
+          ctx.fillStyle = isHovered ? slice.hoverColor : slice.color;
+          ctx.fill();
+
+          ctx.strokeStyle = "#ffffff";
+          ctx.lineWidth = 2.5;
+          ctx.stroke();
+
+          chartGeometry.donutSlices.push({
+            index: idx,
+            startAngle,
+            endAngle,
+            data: slice
+          });
+
+          startAngle = endAngle;
+        });
+
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = "#64748b";
+        ctx.font = "600 11px sans-serif";
+        ctx.fillText(taxPct > 0 ? "NET MATURITY" : "MATURITY VALUE", centerX, centerY - 14);
+
+        ctx.fillStyle = "#0f172a";
+        ctx.font = "800 18px sans-serif";
+        ctx.fillText(formatINR(totalNetCorpus), centerX, centerY + 8);
+      }
+
+      /* ----------------------------------------------------------------------
          8. CHART POINTER / TOUCH INTERACTION & TOOLTIPS
          ---------------------------------------------------------------------- */
-        function handleChartPointer(clientX, clientY) {
-          const rect = els.canvas.getBoundingClientRect();
-          const x = clientX - rect.left;
-          const y = clientY - rect.top;
+      function handleChartPointer(clientX, clientY) {
+        const rect = els.canvas.getBoundingClientRect();
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
 
-          if (state.activeTab === "timeline") {
-            let found = null;
-            for (let i = 0; i < chartGeometry.bars.length; i++) {
-              const b = chartGeometry.bars[i];
-              if (x >= b.xMin && x <= b.xMax) {
-                found = b;
+        if (state.activeTab === "timeline") {
+          let found = null;
+          for (let i = 0; i < chartGeometry.bars.length; i++) {
+            const b = chartGeometry.bars[i];
+            if (x >= b.xMin && x <= b.xMax) {
+              found = b;
+              break;
+            }
+          }
+
+          if (found) {
+            if (hoveredIndex !== found.index) {
+              hoveredIndex = found.index;
+              drawChart();
+            }
+            const d = found.data;
+            els.tooltip.innerHTML = `
+              <div class="tt-header">${d.label}</div>
+              <div class="tt-row"><span>Principal:</span><span class="tt-val">${formatINR(d.cumulativePrincipal)}</span></div>
+              <div class="tt-row"><span>Period Int:</span><span class="tt-val" style="color:#6ee7b7;">+${formatINR(d.periodInterest)}</span></div>
+              <div class="tt-row"><span>Total Int:</span><span class="tt-val" style="color:#6ee7b7;">${formatINR(d.cumulativeInterest)}</span></div>
+              <div class="tt-row" style="border-top:1px solid rgba(255,255,255,0.14);padding-top:4px;margin-top:4px;">
+                <span>Balance:</span><span class="tt-val">${formatINR(d.closingBalance)}</span>
+              </div>
+            `;
+            positionTooltip(found.xCenter, Math.max(16, found.yTop - 12), rect.width, rect.height);
+          } else {
+            hideTooltip();
+          }
+        } else {
+          const dx = x - chartGeometry.centerX;
+          const dy = y - chartGeometry.centerY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist >= chartGeometry.innerR && dist <= chartGeometry.outerR + 12) {
+            let angle = Math.atan2(dy, dx);
+            if (angle < -Math.PI / 2) angle += Math.PI * 2;
+
+            let foundSlice = null;
+            for (let i = 0; i < chartGeometry.donutSlices.length; i++) {
+              const s = chartGeometry.donutSlices[i];
+              if (angle >= s.startAngle && angle <= s.endAngle) {
+                foundSlice = s;
                 break;
               }
             }
 
-            if (found) {
-              if (hoveredIndex !== found.index) {
-                hoveredIndex = found.index;
+            if (foundSlice) {
+              if (hoveredIndex !== foundSlice.index) {
+                hoveredIndex = foundSlice.index;
                 drawChart();
               }
-              const d = found.data;
+              const s = foundSlice.data;
               els.tooltip.innerHTML = `
-              <div class="tt-header">${d.label}</div>
-              <div class="tt-row"><span>Principal:</span><span class="tt-val">${
-                formatINR(d.cumulativePrincipal)
-              }</span></div>
-              <div class="tt-row"><span>Period Int:</span><span class="tt-val" style="color:#6ee7b7;">+${
-                formatINR(d.periodInterest)
-              }</span></div>
-              <div class="tt-row"><span>Total Int:</span><span class="tt-val" style="color:#6ee7b7;">${
-                formatINR(d.cumulativeInterest)
-              }</span></div>
-              <div class="tt-row" style="border-top:1px solid rgba(255,255,255,0.14);padding-top:4px;margin-top:4px;">
-                <span>Balance:</span><span class="tt-val">${
-                formatINR(d.closingBalance)
-              }</span>
-              </div>
-            `;
-              positionTooltip(
-                found.xCenter,
-                Math.max(16, found.yTop - 12),
-                rect.width,
-                rect.height,
-              );
-            } else {
-              hideTooltip();
-            }
-          } else {
-            // Donut hit test
-            const dx = x - chartGeometry.centerX;
-            const dy = y - chartGeometry.centerY;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-
-            if (
-              dist >= chartGeometry.innerR && dist <= chartGeometry.outerR + 12
-            ) {
-              let angle = Math.atan2(dy, dx);
-              if (angle < -Math.PI / 2) angle += Math.PI * 2;
-
-              let foundSlice = null;
-              for (let i = 0; i < chartGeometry.donutSlices.length; i++) {
-                const s = chartGeometry.donutSlices[i];
-                if (angle >= s.startAngle && angle <= s.endAngle) {
-                  foundSlice = s;
-                  break;
-                }
-              }
-
-              if (foundSlice) {
-                if (hoveredIndex !== foundSlice.index) {
-                  hoveredIndex = foundSlice.index;
-                  drawChart();
-                }
-                const s = foundSlice.data;
-                els.tooltip.innerHTML = `
                 <div class="tt-header">${s.label}</div>
-                <div class="tt-row"><span>Amount:</span><span class="tt-val">${
-                  formatINR(s.amount)
-                }</span></div>
-                <div class="tt-row"><span>Share:</span><span class="tt-val" style="color:#6ee7b7;">${
-                  s.pct.toFixed(1)
-                }%</span></div>
+                <div class="tt-row"><span>Amount:</span><span class="tt-val">${formatINR(s.amount)}</span></div>
+                <div class="tt-row"><span>Share:</span><span class="tt-val" style="color:#6ee7b7;">${s.pct.toFixed(1)}%</span></div>
               `;
-                positionTooltip(x, y - 14, rect.width, rect.height);
-                return;
-              }
+              positionTooltip(x, y - 14, rect.width, rect.height);
+              return;
             }
-            hideTooltip();
           }
+          hideTooltip();
         }
+      }
 
-        function positionTooltip(targetX, targetY, containerW, containerH) {
-          els.tooltip.classList.add("visible");
-          const ttRect = els.tooltip.getBoundingClientRect();
-          let left = targetX - ttRect.width / 2;
-          let top = targetY - ttRect.height;
+      function positionTooltip(targetX, targetY, containerW, containerH) {
+        els.tooltip.classList.add("visible");
+        const ttRect = els.tooltip.getBoundingClientRect();
+        let left = targetX - ttRect.width / 2;
+        let top = targetY - ttRect.height;
 
-          if (top < 8) top = targetY + 24;
-          left = Math.max(8, Math.min(containerW - ttRect.width - 8, left));
-          top = Math.max(8, Math.min(containerH - ttRect.height - 8, top));
+        if (top < 8) top = targetY + 24;
+        left = Math.max(8, Math.min(containerW - ttRect.width - 8, left));
+        top = Math.max(8, Math.min(containerH - ttRect.height - 8, top));
 
-          els.tooltip.style.left = left + "px";
-          els.tooltip.style.top = top + "px";
+        els.tooltip.style.left = left + "px";
+        els.tooltip.style.top = top + "px";
+      }
+
+      function hideTooltip() {
+        if (hoveredIndex !== -1) {
+          hoveredIndex = -1;
+          drawChart();
         }
+        els.tooltip.classList.remove("visible");
+      }
 
-        function hideTooltip() {
-          if (hoveredIndex !== -1) {
-            hoveredIndex = -1;
-            drawChart();
-          }
-          els.tooltip.classList.remove("visible");
-        }
-
-        /* ----------------------------------------------------------------------
+      /* ----------------------------------------------------------------------
          9. EVENT LISTENERS & NON-BLOCKING VALIDATION
          ---------------------------------------------------------------------- */
-        function syncInputsFromState() {
-          els.monthlyDepositInput.value = formatNumberCommas(
-            state.monthlyDeposit,
-          );
-          els.targetGoalInput.value = formatNumberCommas(state.targetGoal);
-          els.tenureInput.value = state.tenureValue;
-          els.tenureUnit.value = state.tenureUnit;
-          els.rateSlider.value = state.rate.toFixed(2);
-          els.rateInput.value = state.rate.toFixed(2);
-          els.compoundingSelect.value = String(state.compoundingFreq);
+      function syncInputsFromState() {
+        els.monthlyDepositInput.value = formatNumberCommas(state.monthlyDeposit);
+        els.targetGoalInput.value = formatNumberCommas(state.targetGoal);
+        els.tenureInput.value = state.tenureValue;
+        els.tenureUnit.value = state.tenureUnit;
+        els.rateSlider.value = state.rate;
+        els.rateInput.value = state.rate.toFixed(2);
+        els.compoundingSelect.value = String(state.compoundingFreq);
 
-          // Mode UI
-          const isGoal = state.mode === "goal";
-          els.modeDepositBtn.classList.toggle("active", !isGoal);
-          els.modeGoalBtn.classList.toggle("active", isGoal);
-          els.depositInputGroup.style.display = isGoal ? "none" : "block";
-          els.goalInputGroup.style.display = isGoal ? "block" : "none";
+        const isGoal = state.mode === "goal";
+        els.modeDepositBtn.classList.toggle("active", !isGoal);
+        els.modeGoalBtn.classList.toggle("active", isGoal);
+        els.depositInputGroup.style.display = isGoal ? "none" : "block";
+        els.goalInputGroup.style.display = isGoal ? "block" : "none";
 
-          // Deposit chips active state
-          els.depositChips.forEach((btn) => {
-            btn.classList.toggle(
-              "active",
-              Number(btn.dataset.val) === state.monthlyDeposit,
-            );
-          });
-          els.goalChips.forEach((btn) => {
-            btn.classList.toggle(
-              "active",
-              Number(btn.dataset.goal) === state.targetGoal,
-            );
-          });
+        els.depositChips.forEach((btn) => {
+          btn.classList.toggle("active", Number(btn.dataset.val) === state.monthlyDeposit);
+        });
+        els.goalChips.forEach((btn) => {
+          btn.classList.toggle("active", Number(btn.dataset.goal) === state.targetGoal);
+        });
 
-          // Tax buttons
-          els.taxBtns.forEach((btn) => {
-            btn.classList.toggle("active", btn.dataset.tax === state.taxMode);
-          });
-          els.customTaxBox.classList.toggle(
-            "visible",
-            state.taxMode === "custom",
-          );
-        }
+        els.taxBtns.forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.tax === state.taxMode);
+        });
+        els.customTaxBox.classList.toggle("visible", state.taxMode === "custom");
+      }
 
-        function clearActivePresetPill() {
-          els.presetPills.forEach((p) => p.classList.remove("active"));
-        }
+      function clearActivePresetPill() {
+        els.presetPills.forEach((p) => p.classList.remove("active"));
+      }
 
-        function bindEvents() {
-          // Quick Plan Presets
-          els.presetPills.forEach((pill) => {
-            pill.addEventListener("click", () => {
-              const key = pill.dataset.preset;
-              const cfg = PRESETS[key];
-              if (!cfg) return;
-              state = { ...state, ...cfg };
-              els.presetPills.forEach((p) =>
-                p.classList.toggle("active", p === pill)
-              );
-              els.depositWarning.classList.remove("visible");
-              els.tenureWarning.classList.remove("visible");
-              els.rateWarning.classList.remove("visible");
-              syncInputsFromState();
-              recalculateAndRender();
-            });
-          });
-
-          // Reset Button
-          els.resetBtn.addEventListener("click", () => {
-            state = { ...DEFAULT_STATE };
-            els.presetPills.forEach((p) =>
-              p.classList.toggle("active", p.dataset.preset === "1y")
-            );
+      function bindEvents() {
+        els.presetPills.forEach((pill) => {
+          pill.addEventListener("click", () => {
+            const key = pill.dataset.preset;
+            const cfg = PRESETS[key];
+            if (!cfg) return;
+            state = { ...state, ...cfg };
+            els.presetPills.forEach((p) => p.classList.toggle("active", p === pill));
             els.depositWarning.classList.remove("visible");
-            els.goalWarning.classList.remove("visible");
             els.tenureWarning.classList.remove("visible");
             els.rateWarning.classList.remove("visible");
             syncInputsFromState();
             recalculateAndRender();
           });
+        });
 
-          // Mode Switcher
-          els.modeDepositBtn.addEventListener("click", () => {
-            state.mode = "deposit";
-            syncInputsFromState();
-            recalculateAndRender();
-          });
-
-          els.modeGoalBtn.addEventListener("click", () => {
-            state.mode = "goal";
-            clearActivePresetPill();
-            syncInputsFromState();
-            recalculateAndRender();
-          });
-
-          // Monthly Deposit Input (Non-blocking typing + Indian comma formatting)
-          els.monthlyDepositInput.addEventListener("input", () => {
-            clearActivePresetPill();
-            const rawDigits = els.monthlyDepositInput.value.replace(
-              /[^0-9]/g,
-              "",
-            );
-            if (rawDigits === "") {
-              els.depositWarning.classList.add("visible");
-              return;
-            }
-            const numericVal = parseInt(rawDigits, 10);
-            els.monthlyDepositInput.value = formatNumberCommas(numericVal);
-            els.depositWarning.classList.toggle("visible", numericVal < 100);
-            if (numericVal >= 100) {
-              state.monthlyDeposit = numericVal;
-              els.depositChips.forEach((btn) =>
-                btn.classList.toggle(
-                  "active",
-                  Number(btn.dataset.val) === numericVal,
-                )
-              );
-              recalculateAndRender();
-            }
-          });
-
-          els.monthlyDepositInput.addEventListener("blur", () => {
-            const val = parseNumericString(els.monthlyDepositInput.value);
-            state.monthlyDeposit = Math.max(100, Math.round(val));
-            els.monthlyDepositInput.value = formatNumberCommas(
-              state.monthlyDeposit,
-            );
-            els.depositWarning.classList.remove("visible");
-            els.depositChips.forEach((btn) =>
-              btn.classList.toggle(
-                "active",
-                Number(btn.dataset.val) === state.monthlyDeposit,
-              )
-            );
-            recalculateAndRender();
-          });
-
-          els.depositChips.forEach((chip) => {
-            chip.addEventListener("click", () => {
-              clearActivePresetPill();
-              state.monthlyDeposit = Number(chip.dataset.val);
-              els.depositWarning.classList.remove("visible");
-              syncInputsFromState();
-              recalculateAndRender();
-            });
-          });
-
-          // Target Goal Input (Non-blocking typing + Indian comma formatting)
-          els.targetGoalInput.addEventListener("input", () => {
-            const rawDigits = els.targetGoalInput.value.replace(/[^0-9]/g, "");
-            if (rawDigits === "") {
-              els.goalWarning.classList.add("visible");
-              return;
-            }
-            const numericVal = parseInt(rawDigits, 10);
-            els.targetGoalInput.value = formatNumberCommas(numericVal);
-            els.goalWarning.classList.toggle("visible", numericVal < 1000);
-            if (numericVal >= 1000) {
-              state.targetGoal = numericVal;
-              els.goalChips.forEach((btn) =>
-                btn.classList.toggle(
-                  "active",
-                  Number(btn.dataset.goal) === numericVal,
-                )
-              );
-              recalculateAndRender();
-            }
-          });
-
-          els.targetGoalInput.addEventListener("blur", () => {
-            const val = parseNumericString(els.targetGoalInput.value);
-            state.targetGoal = Math.max(1000, Math.round(val));
-            els.targetGoalInput.value = formatNumberCommas(state.targetGoal);
-            els.goalWarning.classList.remove("visible");
-            recalculateAndRender();
-          });
-
-          els.goalChips.forEach((chip) => {
-            chip.addEventListener("click", () => {
-              state.targetGoal = Number(chip.dataset.goal);
-              els.goalWarning.classList.remove("visible");
-              syncInputsFromState();
-              recalculateAndRender();
-            });
-          });
-
-          // Tenure Input & Unit
-          els.tenureInput.addEventListener("input", () => {
-            clearActivePresetPill();
-            const val = parseFloat(els.tenureInput.value);
-            if (isNaN(val)) {
-              els.tenureWarning.classList.add("visible");
-              return;
-            }
-            const months = state.tenureUnit === "years" ? val * 12 : val;
-            const invalid = months < 6 || months > 120;
-            els.tenureWarning.classList.toggle("visible", invalid);
-            if (!invalid) {
-              state.tenureValue = Math.round(val);
-              recalculateAndRender();
-            }
-          });
-
-          els.tenureInput.addEventListener("blur", () => {
-            let val = Math.round(parseFloat(els.tenureInput.value) || 12);
-            if (state.tenureUnit === "years") {
-              val = Math.min(10, Math.max(1, val));
-            } else {
-              val = Math.min(120, Math.max(6, val));
-            }
-            state.tenureValue = val;
-            els.tenureInput.value = val;
-            els.tenureWarning.classList.remove("visible");
-            recalculateAndRender();
-          });
-
-          els.tenureUnit.addEventListener("change", () => {
-            clearActivePresetPill();
-            const newUnit = els.tenureUnit.value;
-            if (newUnit === "years" && state.tenureUnit === "months") {
-              state.tenureValue = Math.max(
-                1,
-                Math.min(10, Math.round(state.tenureValue / 12)),
-              );
-            } else if (newUnit === "months" && state.tenureUnit === "years") {
-              state.tenureValue = Math.max(
-                6,
-                Math.min(120, state.tenureValue * 12),
-              );
-            }
-            state.tenureUnit = newUnit;
-            els.tenureInput.value = state.tenureValue;
-            els.tenureWarning.classList.remove("visible");
-            recalculateAndRender();
-          });
-
-          // Interest Rate Slider & Numeric Input (Real-time sync)
-          const handleSliderRate = () => {
-            clearActivePresetPill();
-            const val = parseFloat(els.rateSlider.value);
-            state.rate = val;
-            els.rateInput.value = val.toFixed(2);
-            els.rateWarning.classList.remove("visible");
-            recalculateAndRender();
-          };
-          els.rateSlider.addEventListener("input", handleSliderRate);
-          els.rateSlider.addEventListener("change", handleSliderRate);
-
-          els.rateInput.addEventListener("input", () => {
-            clearActivePresetPill();
-            const val = parseFloat(els.rateInput.value);
-            if (isNaN(val) || val < 1 || val > 15) {
-              els.rateWarning.classList.add("visible");
-              return;
-            }
-            els.rateWarning.classList.remove("visible");
-            state.rate = val;
-            els.rateSlider.value = val;
-            recalculateAndRender();
-          });
-
-          els.rateInput.addEventListener("blur", () => {
-            let val = parseFloat(els.rateInput.value);
-            if (isNaN(val)) val = 6.5;
-            val = Math.min(15, Math.max(1, val));
-            state.rate = val;
-            els.rateInput.value = val.toFixed(2);
-            els.rateSlider.value = val.toFixed(2);
-            els.rateWarning.classList.remove("visible");
-            recalculateAndRender();
-          });
-
-          // Compounding Frequency
-          els.compoundingSelect.addEventListener("change", () => {
-            state.compoundingFreq = Number(els.compoundingSelect.value);
-            recalculateAndRender();
-          });
-
-          // Tax / TDS Buttons & Custom Input
-          els.taxBtns.forEach((btn) => {
-            btn.addEventListener("click", () => {
-              state.taxMode = btn.dataset.tax;
-              syncInputsFromState();
-              recalculateAndRender();
-            });
-          });
-
-          els.customTaxInput.addEventListener("input", () => {
-            const val = parseFloat(els.customTaxInput.value);
-            state.customTaxRate = isNaN(val)
-              ? 0
-              : Math.min(50, Math.max(0, val));
-            recalculateAndRender();
-          });
-
-          // Chart Tabs
-          els.tabTimelineBtn.addEventListener("click", () => {
-            state.activeTab = "timeline";
-            hoveredIndex = -1;
-            hideTooltip();
-            els.tabTimelineBtn.classList.add("active");
-            els.tabDonutBtn.classList.remove("active");
-            drawChart();
-          });
-
-          els.tabDonutBtn.addEventListener("click", () => {
-            state.activeTab = "donut";
-            hoveredIndex = -1;
-            hideTooltip();
-            els.tabDonutBtn.classList.add("active");
-            els.tabTimelineBtn.classList.remove("active");
-            drawChart();
-          });
-
-          // Canvas Mouse & Touch Scrubbing
-          els.canvas.addEventListener(
-            "mousemove",
-            (e) => handleChartPointer(e.clientX, e.clientY),
-          );
-          els.canvas.addEventListener("mouseleave", hideTooltip);
-          els.canvas.addEventListener("touchstart", (e) => {
-            if (e.touches.length > 0) {
-              handleChartPointer(e.touches[0].clientX, e.touches[0].clientY);
-            }
-          }, { passive: true });
-          els.canvas.addEventListener("touchmove", (e) => {
-            if (e.touches.length > 0) {
-              handleChartPointer(e.touches[0].clientX, e.touches[0].clientY);
-            }
-          }, { passive: true });
-
-          // Ledger Granularity & Collapse
-          els.ledgerMonthlyBtn.addEventListener("click", () => {
-            state.ledgerGranularity = "monthly";
-            els.ledgerMonthlyBtn.classList.add("active");
-            els.ledgerQuarterlyBtn.classList.remove("active");
-            renderLedgerTable();
-          });
-
-          els.ledgerQuarterlyBtn.addEventListener("click", () => {
-            state.ledgerGranularity = "quarterly";
-            els.ledgerQuarterlyBtn.classList.add("active");
-            els.ledgerMonthlyBtn.classList.remove("active");
-            renderLedgerTable();
-          });
-
-          els.toggleLedgerBtn.addEventListener("click", () => {
-            state.ledgerCollapsed = !state.ledgerCollapsed;
-            els.ledgerWrapper.classList.toggle(
-              "collapsed",
-              state.ledgerCollapsed,
-            );
-            els.toggleLedgerBtn.textContent = state.ledgerCollapsed
-              ? "Show Table"
-              : "Hide Table";
-          });
-
-          // Mobile Sticky Jump Button
-          els.mobileJumpChartBtn.addEventListener("click", () => {
-            els.chartSection.scrollIntoView({
-              behavior: "smooth",
-              block: "start",
-            });
-          });
-
-          // Responsive Window Resize
-          window.addEventListener("resize", () => {
-            drawChart();
-          });
-        }
-
-        /* ----------------------------------------------------------------------
-         10. INITIALIZATION
-         ---------------------------------------------------------------------- */
-        window.addEventListener("DOMContentLoaded", () => {
-          bindEvents();
+        els.resetBtn.addEventListener("click", () => {
+          state = { ...DEFAULT_STATE };
+          els.presetPills.forEach((p) => p.classList.toggle("active", p.dataset.preset === "1y"));
+          els.depositWarning.classList.remove("visible");
+          els.goalWarning.classList.remove("visible");
+          els.tenureWarning.classList.remove("visible");
+          els.rateWarning.classList.remove("visible");
           syncInputsFromState();
           recalculateAndRender();
         });
-      })();
-    </script>
-  </body>
+
+        els.modeDepositBtn.addEventListener("click", () => {
+          state.mode = "deposit";
+          syncInputsFromState();
+          recalculateAndRender();
+        });
+
+        els.modeGoalBtn.addEventListener("click", () => {
+          state.mode = "goal";
+          clearActivePresetPill();
+          syncInputsFromState();
+          recalculateAndRender();
+        });
+
+        els.monthlyDepositInput.addEventListener("input", () => {
+          clearActivePresetPill();
+          const rawDigits = els.monthlyDepositInput.value.replace(/[^0-9]/g, "");
+          if (rawDigits === "") {
+            els.depositWarning.classList.add("visible");
+            return;
+          }
+          const numericVal = parseInt(rawDigits, 10);
+          els.monthlyDepositInput.value = formatNumberCommas(numericVal);
+          els.depositWarning.classList.toggle("visible", numericVal < 100);
+          if (numericVal >= 100) {
+            state.monthlyDeposit = numericVal;
+            els.depositChips.forEach((btn) => btn.classList.toggle("active", Number(btn.dataset.val) === numericVal));
+            recalculateAndRender();
+          }
+        });
+
+        els.monthlyDepositInput.addEventListener("blur", () => {
+          const val = parseNumericString(els.monthlyDepositInput.value);
+          state.monthlyDeposit = Math.max(100, Math.round(val));
+          els.monthlyDepositInput.value = formatNumberCommas(state.monthlyDeposit);
+          els.depositWarning.classList.remove("visible");
+          els.depositChips.forEach((btn) => btn.classList.toggle("active", Number(btn.dataset.val) === state.monthlyDeposit));
+          recalculateAndRender();
+        });
+
+        els.depositChips.forEach((chip) => {
+          chip.addEventListener("click", () => {
+            clearActivePresetPill();
+            state.monthlyDeposit = Number(chip.dataset.val);
+            els.depositWarning.classList.remove("visible");
+            syncInputsFromState();
+            recalculateAndRender();
+          });
+        });
+
+        els.targetGoalInput.addEventListener("input", () => {
+          const rawDigits = els.targetGoalInput.value.replace(/[^0-9]/g, "");
+          if (rawDigits === "") {
+            els.goalWarning.classList.add("visible");
+            return;
+          }
+          const numericVal = parseInt(rawDigits, 10);
+          els.targetGoalInput.value = formatNumberCommas(numericVal);
+          els.goalWarning.classList.toggle("visible", numericVal < 1000);
+          if (numericVal >= 1000) {
+            state.targetGoal = numericVal;
+            els.goalChips.forEach((btn) => btn.classList.toggle("active", Number(btn.dataset.goal) === numericVal));
+            recalculateAndRender();
+          }
+        });
+
+        els.targetGoalInput.addEventListener("blur", () => {
+          const val = parseNumericString(els.targetGoalInput.value);
+          state.targetGoal = Math.max(1000, Math.round(val));
+          els.targetGoalInput.value = formatNumberCommas(state.targetGoal);
+          els.goalWarning.classList.remove("visible");
+          recalculateAndRender();
+        });
+
+        els.goalChips.forEach((chip) => {
+          chip.addEventListener("click", () => {
+            state.targetGoal = Number(chip.dataset.goal);
+            els.goalWarning.classList.remove("visible");
+            syncInputsFromState();
+            recalculateAndRender();
+          });
+        });
+
+        els.tenureInput.addEventListener("input", () => {
+          clearActivePresetPill();
+          const val = parseFloat(els.tenureInput.value);
+          if (isNaN(val)) {
+            els.tenureWarning.classList.add("visible");
+            return;
+          }
+          const months = state.tenureUnit === "years" ? val * 12 : val;
+          els.tenureWarning.classList.toggle("visible", months < 6 || months > 120);
+          if (months >= 6 && months <= 120) {
+            state.tenureValue = Math.round(val);
+            recalculateAndRender();
+          }
+        });
+
+        els.tenureInput.addEventListener("blur", () => {
+          let val = Math.round(parseFloat(els.tenureInput.value) || 12);
+          if (state.tenureUnit === "years") {
+            val = Math.min(10, Math.max(1, val));
+          } else {
+            val = Math.min(120, Math.max(6, val));
+          }
+          state.tenureValue = val;
+          els.tenureInput.value = val;
+          els.tenureWarning.classList.remove("visible");
+          recalculateAndRender();
+        });
+
+        els.tenureUnit.addEventListener("change", () => {
+          clearActivePresetPill();
+          state.tenureUnit = els.tenureUnit.value;
+          if (state.tenureUnit === "years" && state.tenureValue > 10) {
+            state.tenureValue = Math.max(1, Math.round(state.tenureValue / 12));
+          } else if (state.tenureUnit === "months" && state.tenureValue < 6) {
+            state.tenureValue = state.tenureValue * 12;
+          }
+          els.tenureInput.value = state.tenureValue;
+          els.tenureWarning.classList.remove("visible");
+          recalculateAndRender();
+        });
+
+        els.rateSlider.addEventListener("input", () => {
+          clearActivePresetPill();
+          const val = parseFloat(els.rateSlider.value);
+          state.rate = val;
+          els.rateInput.value = val.toFixed(2);
+          els.rateWarning.classList.remove("visible");
+          recalculateAndRender();
+        });
+
+        els.rateInput.addEventListener("input", () => {
+          clearActivePresetPill();
+          const val = parseFloat(els.rateInput.value);
+          if (isNaN(val) || val < 1 || val > 15) {
+            els.rateWarning.classList.add("visible");
+            return;
+          }
+          els.rateWarning.classList.remove("visible");
+          state.rate = val;
+          els.rateSlider.value = val;
+          recalculateAndRender();
+        });
+
+        els.rateInput.addEventListener("blur", () => {
+          let val = parseFloat(els.rateInput.value);
+          if (isNaN(val)) val = 6.5;
+          val = Math.min(15, Math.max(1, val));
+          state.rate = val;
+          els.rateSlider.value = val;
+          els.rateInput.value = val.toFixed(2);
+          els.rateWarning.classList.remove("visible");
+          recalculateAndRender();
+        });
+
+        els.compoundingSelect.addEventListener("change", () => {
+          state.compoundingFreq = Number(els.compoundingSelect.value);
+          recalculateAndRender();
+        });
+
+        els.taxBtns.forEach((btn) => {
+          btn.addEventListener("click", () => {
+            state.taxMode = btn.dataset.tax;
+            syncInputsFromState();
+            recalculateAndRender();
+          });
+        });
+
+        els.customTaxInput.addEventListener("input", () => {
+          const val = parseFloat(els.customTaxInput.value);
+          state.customTaxRate = isNaN(val) ? 0 : Math.min(50, Math.max(0, val));
+          recalculateAndRender();
+        });
+
+        els.tabTimelineBtn.addEventListener("click", () => {
+          state.activeTab = "timeline";
+          hoveredIndex = -1;
+          hideTooltip();
+          els.tabTimelineBtn.classList.add("active");
+          els.tabDonutBtn.classList.remove("active");
+          drawChart();
+        });
+
+        els.tabDonutBtn.addEventListener("click", () => {
+          state.activeTab = "donut";
+          hoveredIndex = -1;
+          hideTooltip();
+          els.tabDonutBtn.classList.add("active");
+          els.tabTimelineBtn.classList.remove("active");
+          drawChart();
+        });
+
+        els.canvas.addEventListener("mousemove", (e) => handleChartPointer(e.clientX, e.clientY));
+        els.canvas.addEventListener("mouseleave", hideTooltip);
+        els.canvas.addEventListener("touchstart", (e) => {
+          if (e.touches.length > 0) {
+            handleChartPointer(e.touches[0].clientX, e.touches[0].clientY);
+          }
+        }, { passive: true });
+        els.canvas.addEventListener("touchmove", (e) => {
+          if (e.touches.length > 0) {
+            handleChartPointer(e.touches[0].clientX, e.touches[0].clientY);
+          }
+        }, { passive: true });
+
+        els.ledgerMonthlyBtn.addEventListener("click", () => {
+          state.ledgerGranularity = "monthly";
+          els.ledgerMonthlyBtn.classList.add("active");
+          els.ledgerQuarterlyBtn.classList.remove("active");
+          renderLedgerTable();
+        });
+
+        els.ledgerQuarterlyBtn.addEventListener("click", () => {
+          state.ledgerGranularity = "quarterly";
+          els.ledgerQuarterlyBtn.classList.add("active");
+          els.ledgerMonthlyBtn.classList.remove("active");
+          renderLedgerTable();
+        });
+
+        els.mobileJumpChartBtn.addEventListener("click", () => {
+          els.chartSection.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+
+        window.addEventListener("resize", () => {
+          drawChart();
+        });
+      }
+
+      /* ----------------------------------------------------------------------
+         10. INITIALIZATION
+         ---------------------------------------------------------------------- */
+      window.addEventListener("DOMContentLoaded", () => {
+        bindEvents();
+        syncInputsFromState();
+        recalculateAndRender();
+      });
+    })();
+  </script>
+</body>
 </html>
