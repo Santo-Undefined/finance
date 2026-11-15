@@ -9,7 +9,8 @@ This repository is structured to support multiple independent web applications:
 | Site / Tool | Directory Path | Description |
 | :--- | :--- | :--- |
 | **Portal Hub** | `/` (`index.html`) | Landing page linking to all available tools |
-| **FD & Auto-Renew Calculator** | `/FD calculator/` | Interactive Fixed Deposit and auto-renewal growth simulator |
+| **FD & Auto-Renew Calculator** | `/fd-calculator/` | Interactive Fixed Deposit and auto-renewal growth simulator |
+| **RD Calculator** | `/rd-calculator/` | Interactive recurring deposit maturity and interest calculator |
 
 ### How to Add More Sites
 To add another site or calculator to this repo:

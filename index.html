@@ -112,6 +112,17 @@
       font-size: 0.95rem;
       color: var(--primary);
     }
+    .card.rd-card:hover {
+      border-color: #A7F3D0;
+      box-shadow: 0 20px 25px -5px rgba(4, 120, 87, 0.12), 0 10px 10px -5px rgba(4, 120, 87, 0.04);
+    }
+    .rd-card .card-badge {
+      background: #ECFDF5;
+      color: #047857;
+    }
+    .rd-card .card-action {
+      color: #047857;
+    }
     .card-action svg {
       width: 18px;
       height: 18px;
@@ -160,10 +171,21 @@
   </header>
   <main>
     <div class="grid">
-      <a href="fd_calculator/" class="card">
+      <a href="fd-calculator/" class="card">
         <span class="card-badge">Calculator</span>
         <h2>FD &amp; Auto-Renew Calculator</h2>
         <p>Interactive fixed deposit simulator with auto-renewal scheduling, milestone timeline projections, and interest analysis.</p>
+        <div class="card-action">
+          <span>Open Tool</span>
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+          </svg>
+        </div>
+      </a>
+      <a href="rd-calculator/" class="card rd-card">
+        <span class="card-badge">Calculator</span>
+        <h2>RD Calculator</h2>
+        <p>Interactive recurring deposit calculator for estimating maturity amounts, interest earned, and deposit growth.</p>
         <div class="card-action">
           <span>Open Tool</span>
           <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
