@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interactive FD &amp; Auto-Renew Calculator</title>
+  <style>
+    :root {
+      --primary: #9D1D27;
+      --primary-dark: #7A131B;
+      --primary-light: #FFF5F6;
+      --primary-border: #FECDD3;
+      --bg: #F6F7F9;
+      --card: #FFFFFF;
+      --text: #111827;
+      --muted: #6B7280;
+      --border: #E5E7EB;
+      --green: #059669;
+      --green-bg: #ECFDF5;
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+    }
+    /* Header */
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: #fff;
+      padding: 18px 20px;
+      box-shadow: 0 4px 16px rgba(157, 29, 39, 0.22);
+    }
+    .container { max-width: 1280px; margin: 0 auto; }
+    .header-top {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+      margin-bottom: 14px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .logo-badge {
+      background: #fff; color: var(--primary); font-weight: 800; font-size: 13px;
+      padding: 6px 10px; border-radius: 8px; letter-spacing: 0.5px;
+    }
+    h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.2px; }
+    .subtitle { font-size: 12px; opacity: 0.9; }
+    .reset-btn {
+      background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.3);
+      padding: 7px 14px; border-radius: 9px; font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+    .reset-btn:hover { background: rgba(255,255,255,0.25); }
+    /* Preset Bar */
+    .presets-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .presets-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; opacity: 0.85; font-weight: 600; }
+    .preset-btn {
+      background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.28);
+      padding: 6px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.15s;
+    }
+    .preset-btn:hover { background: rgba(255,255,255,0.24); }
+    .preset-btn.active { background: #fff; color: var(--primary); border-color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+
+    /* Main Layout */
+    main { padding: 20px; }
+    .grid-layout {
+      display: grid; grid-template-columns: 400px 1fr; gap: 20px; align-items: start;
+    }
+    @media (max-width: 960px) { .grid-layout { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--card); border-radius: var(--radius); border: 1px solid var(--border);
+      padding: 18px; box-shadow: 0 2px 10px rgba(17, 24, 39, 0.04);
+    }
+    .section-group { margin-bottom: 18px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+    .section-group:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+    .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 8px; }
+    label { font-size: 13px; font-weight: 700; color: var(--text); }
+    .num-input {
+      width: 125px; padding: 7px 10px; border: 1.5px solid #D1D5DB; border-radius: 9px;
+      font-size: 14px; font-weight: 700; color: var(--primary); text-align: right; outline: none;
+    }
+    .num-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(157, 29, 39, 0.12); }
+    input[type="range"] {
+      width: 100%; accent-color: var(--primary); cursor: pointer; height: 6px; margin: 6px 0;
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .chip {
+      padding: 5px 9px; font-size: 11.5px; font-weight: 600; border-radius: 8px;
+      border: 1px solid var(--border); background: #F8FAFC; color: #334155; cursor: pointer; transition: 0.15s;
+    }
+    .chip:hover { border-color: var(--primary); color: var(--primary); }
+    .chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    /* Segmented Controls */
+    .seg-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; background: #F1F5F9; padding: 4px; border-radius: 10px; }
+    .seg-group.three { grid-template-columns: repeat(3, 1fr); }
+    .seg-group.four { grid-template-columns: repeat(4, 1fr); }
+    .seg-btn {
+      padding: 7px 8px; border: none; border-radius: 7px; font-size: 12px; font-weight: 600;
+      background: transparent; color: var(--muted); cursor: pointer; transition: 0.15s;
+    }
+    .seg-btn.active { background: #fff; color: var(--primary); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+
+    /* Tenure Inline */
+    .tenure-inline { display: flex; gap: 6px; align-items: center; }
+    .tenure-inline .num-input { width: 85px; }
+    select {
+      padding: 7px 8px; border: 1.5px solid #CBD5E1; border-radius: 9px; font-size: 13px;
+      font-weight: 600; color: var(--text); background: #fff; cursor: pointer; outline: none;
+    }
+
+    /* Auto-Renew Panel */
+    .renew-box {
+      background: var(--primary-light); border: 1px solid var(--primary-border); border-radius: 12px; padding: 13px;
+    }
+    .toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .slider-round {
+      position: absolute; cursor: pointer; inset: 0; background: #CBD5E1; border-radius: 24px; transition: 0.2s;
+    }
+    .slider-round:before {
+      position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
+      background: #fff; border-radius: 50%; transition: 0.2s;
+    }
+    input:checked + .slider-round { background: var(--primary); }
+    input:checked + .slider-round:before { transform: translateX(20px); }
+    .disabled-area { opacity: 0.45; pointer-events: none; }
+    .horizon-badge {
+      margin-top: 10px; background: #fff; border: 1px solid var(--primary-border); border-radius: 8px;
+      padding: 8px 10px; font-size: 12px; font-weight: 700; color: var(--primary-dark); text-align: center;
+    }
+
+    /* Right Dashboard */
+    .right-col { display: flex; flex-direction: column; gap: 18px; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    @media (max-width: 1150px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 520px) { .kpi-grid { grid-template-columns: 1fr; } }
+    .kpi-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+    }
+    .kpi-card.highlight {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: #fff; border-color: var(--primary);
+    }
+    .kpi-title { font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; opacity: 0.8; }
+    .kpi-val { font-size: 21px; font-weight: 800; margin: 5px 0 3px; letter-spacing: -0.4px; }
+    .kpi-sub { font-size: 12px; font-weight: 600; color: var(--green); }
+    .kpi-card.highlight .kpi-sub { color: #FDE68A; }
+
+    /* Chart Card */
+    .chart-header {
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px;
+    }
+    .chart-title { font-size: 15px; font-weight: 700; }
+    .legend { display: flex; gap: 14px; font-size: 12px; font-weight: 600; color: var(--muted); }
+    .legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; }
+    .canvas-wrap { position: relative; width: 100%; height: 290px; }
+    canvas { display: block; width: 100%; height: 100%; border-radius: 10px; }
+    .tooltip {
+      position: absolute; display: none; pointer-events: none; background: rgba(15, 23, 42, 0.94);
+      color: #fff; padding: 9px 12px; border-radius: 9px; font-size: 12px; line-height: 1.5;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.22); z-index: 10; min-width: 185px;
+    }
+
+    /* Ledger Table */
+    .table-header {
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px;
+    }
+    .search-input {
+      padding: 6px 10px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 12px; width: 200px; outline: none;
+    }
+    .table-scroll { max-height: 310px; overflow: auto; border: 1px solid var(--border); border-radius: 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12.5px; text-align: right; }
+    th {
+      position: sticky; top: 0; background: #F8FAFC; color: var(--muted); font-weight: 700;
+      padding: 10px 12px; border-bottom: 1px solid var(--border); white-space: nowrap;
+    }
+    th:first-child, td:first-child { text-align: left; }
+    td { padding: 8px 12px; border-bottom: 1px solid #F1F5F9; white-space: nowrap; }
+    tr:hover td { background: #F8FAFC; }
+    .gain-cell { color: var(--green); font-weight: 700; }
+    .bold-cell { font-weight: 700; color: var(--text); }
+    .note-text { font-size: 11px; color: var(--muted); margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="header-top">
+        <div class="brand">
+          <div class="logo-badge">FD PRO</div>
+          <div>
+            <h1>Interactive FD &amp; Auto-Renew Calculator</h1>
+            <div class="subtitle">Simulate single-term &amp; multi-cycle compounding rollovers (7 Days to 10 Years)</div>
+          </div>
+        </div>
+        <button type="button" class="reset-btn" id="resetBtn">Reset Defaults</button>
+      </div>
+      <div class="presets-bar" id="presetsBar">
+        <span class="presets-label">Quick Plans:</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="grid-layout">
+      <!-- LEFT CONTROL PANEL -->
+      <section class="card">
+        <!-- 1. Deposit Principal -->
+        <div class="section-group">
+          <div class="label-row">
+            <label for="principalInput">Deposit Principal (₹)</label>
+            <input type="number" id="principalInput" class="num-input" min="500" max="2500000" step="500" value="1000" />
+          </div>
+          <input type="range" id="principalSlider" min="500" max="2500000" step="500" value="1000" />
+          <div class="chips" id="principalChips"></div>
+        </div>
+
+        <!-- 2. Single FD Cycle Tenure -->
+        <div class="section-group">
+          <div class="label-row">
+            <label for="tenureInput">Single FD Cycle Tenure</label>
+            <div class="tenure-inline">
+              <input type="number" id="tenureInput" class="num-input" min="1" max="3650" value="7" />
+              <select id="tenureUnit">
+                <option value="days" selected>Days</option>
+                <option value="months">Months</option>
+                <option value="years">Years</option>
+              </select>
+            </div>
+          </div>
+          <div class="chips" id="tenurePills"></div>
+        </div>
+
+        <!-- 3. Customer Category -->
+        <div class="section-group">
+          <div class="label-row">
+            <label>Customer Category</label>
+            <span style="font-size:11px;color:var(--green);font-weight:700;">Senior: +0.50% p.a.</span>
+          </div>
+          <div class="seg-group">
+            <button type="button" class="seg-btn active" id="catGeneral">General Citizen</button>
+            <button type="button" class="seg-btn" id="catSenior">Senior Citizen (+0.50%)</button>
+          </div>
+        </div>
+
+        <!-- 4. Interest Rate -->
+        <div class="section-group">
+          <div class="label-row">
+            <label for="rateInput">Interest Rate (% p.a.)</label>
+            <input type="number" id="rateInput" class="num-input" min="2.50" max="8.50" step="0.05" value="3.25" />
+          </div>
+          <input type="range" id="rateSlider" min="2.50" max="8.50" step="0.05" value="3.25" />
+          <div style="font-size:11px;color:var(--muted);" id="slabHint">Indicative tenure slab rate applied (editable)</div>
+        </div>
+
+        <!-- 5. Auto-Renew Settings -->
+        <div class="section-group">
+          <div class="renew-box">
+            <div class="label-row" style="margin-bottom:10px;">
+              <label for="autoRenewToggle" style="color:var(--primary-dark);">Auto-Renew Rollover Simulator</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="autoRenewToggle" checked />
+                <span class="slider-round"></span>
+              </label>
+            </div>
+
+            <div id="autoRenewBody">
+              <div style="margin-bottom:10px;">
+                <div style="font-size:11.5px;font-weight:700;margin-bottom:5px;color:var(--text);">Rollover Mode</div>
+                <div class="seg-group">
+                  <button type="button" class="seg-btn active" id="modeCompound">Principal + Interest</button>
+                  <button type="button" class="seg-btn" id="modeSimple">Principal Only</button>
+                </div>
+              </div>
+
+              <div class="label-row">
+                <label for="cyclesInput">Number of Auto-Renew Cycles (N)</label>
+                <input type="number" id="cyclesInput" class="num-input" min="1" step="1" value="52" style="width:95px;" />
+              </div>
+              <input type="range" id="cyclesSlider" min="1" max="1043" step="1" value="52" />
+              <div class="chips" id="cycleChips"></div>
+              <div class="horizon-badge" id="horizonBadge">7 days × 52 cycles = 364 days (~1.00 Year)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Interest Rounding Rule -->
+        <div class="section-group">
+          <div class="label-row">
+            <label>Interest Rounding Rule</label>
+            <span style="font-size:11px;color:var(--green);font-weight:700;" id="roundingBoostBadge">+₹0.00 boost</span>
+          </div>
+          <div class="seg-group three" id="roundingGroup">
+            <button type="button" class="seg-btn active" data-round="ceil">Round Up ₹1</button>
+            <button type="button" class="seg-btn" data-round="round">Nearest ₹1</button>
+            <button type="button" class="seg-btn" data-round="exact">Exact Paise</button>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px;" id="roundingHint">
+            Cycle 1 raw interest ₹0.62 rounds up to ₹1/- &amp; compounds on ₹1,001
+          </div>
+        </div>
+
+        <!-- 7. Tax / TDS Slab -->
+        <div class="section-group">
+          <div class="label-row">
+            <label>Tax / TDS Slab on Interest</label>
+            <span style="font-size:11px;color:var(--muted);" id="taxDeductedLabel">Tax: ₹0</span>
+          </div>
+          <div class="seg-group four" id="taxGroup">
+            <button type="button" class="seg-btn active" data-tax="0">0% (None)</button>
+            <button type="button" class="seg-btn" data-tax="10">10% TDS</button>
+            <button type="button" class="seg-btn" data-tax="20">20%</button>
+            <button type="button" class="seg-btn" data-tax="30">30%</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT RESULTS DASHBOARD -->
+      <section class="right-col">
+        <!-- Top 4 KPI Cards -->
+        <div class="kpi-grid">
+          <div class="kpi-card highlight">
+            <div class="kpi-title">Final Maturity Value</div>
+            <div class="kpi-val" id="kpiFinalVal">₹51,648.62</div>
+            <div class="kpi-sub" id="kpiSingleCycleSub">1st Cycle: ₹50,031.16</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Total Interest &amp; Yield</div>
+            <div class="kpi-val" id="kpiTotalInt" style="color:var(--green);">+₹1,648.62</div>
+            <div class="kpi-sub" id="kpiEffYield">Eff. Yield: 3.31% p.a.</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Cumulative Duration</div>
+            <div class="kpi-val" id="kpiDuration">364 Days</div>
+            <div class="kpi-sub" id="kpiDurationSub">52 Cycles (~1.00 Year)</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Post-Tax Net Maturity</div>
+            <div class="kpi-val" id="kpiNetVal">₹51,648.62</div>
+            <div class="kpi-sub" id="kpiNetIntSub">Net Gain: +₹1,648.62</div>
+          </div>
+        </div>
+
+        <!-- Interactive Graph Representation -->
+        <div class="card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Interactive Return Visualization</div>
+              <div class="legend" id="chartLegend">
+                <span><i class="legend-dot" style="background:#CBD5E1;"></i>Principal</span>
+                <span><i class="legend-dot" style="background:#9D1D27;"></i>Cumulative Interest</span>
+              </div>
+            </div>
+            <div class="seg-group" style="width:270px;">
+              <button type="button" class="seg-btn active" id="chartGrowthBtn">Growth Timeline</button>
+              <button type="button" class="seg-btn" id="chartDonutBtn">Corpus Breakdown</button>
+            </div>
+          </div>
+          <div class="canvas-wrap" id="canvasWrap">
+            <canvas id="fdCanvas"></canvas>
+            <div class="tooltip" id="chartTooltip"></div>
+          </div>
+        </div>
+
+        <!-- Cycle-by-Cycle Rollover Ledger -->
+        <div class="card">
+          <div class="table-header">
+            <div>
+              <div class="chart-title">Cycle-by-Cycle Auto-Renew Ledger</div>
+              <div style="font-size:12px;color:var(--muted);" id="ledgerSubtitle">
+                Each cycle reinvests Previous Principal + Net Interest Earned
+              </div>
+            </div>
+            <input type="text" id="ledgerSearch" class="search-input" placeholder="Filter cycle # (e.g. 1, 26, 52)..." />
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Cycle #</th>
+                  <th>Duration</th>
+                  <th>Opening Principal (₹)</th>
+                  <th>Raw Int. (₹)</th>
+                  <th>Credited Int. (₹)</th>
+                  <th>Closing Maturity (₹)</th>
+                  <th>Cumulative Gain (₹)</th>
+                </tr>
+              </thead>
+              <tbody id="ledgerBody"></tbody>
+            </table>
+          </div>
+          <div class="note-text">
+            * Short-term deposits (&lt; 181 days) compute simple interest per cycle on a 365-day basis; deposits &ge; 181 days compound quarterly per standard banking norms. With whole-rupee round-up enabled, fractional cycle interest (e.g., ₹0.62) rounds up to ₹1/- before auto-renew rollover.
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    // Indicative Standard FD Slab Rates (General Citizen)
+    const FD_SLABS = [
+      { maxDays: 14, rate: 3.25, label: "7–14 Days" },
+      { maxDays: 29, rate: 3.25, label: "15–29 Days" },
+      { maxDays: 45, rate: 3.50, label: "30–45 Days" },
+      { maxDays: 90, rate: 4.00, label: "46–90 Days" },
+      { maxDays: 180, rate: 4.50, label: "91–180 Days" },
+      { maxDays: 364, rate: 5.75, label: "181–364 Days" },
+      { maxDays: 399, rate: 6.25, label: "1 Year – 399 Days" },
+      { maxDays: 500, rate: 7.00, label: "400–500 Days Special" },
+      { maxDays: 730, rate: 6.75, label: "501 Days – 2 Years" },
+      { maxDays: 1825, rate: 6.50, label: "2–5 Years" },
+      { maxDays: 3650, rate: 6.25, label: "5–10 Years" }
+    ];
+
+    const PRESETS = [
+      { label: "₹1K @ 3.25% × 52 Wks (₹0.62→₹1)", principal: 1000, days: 7, unit: "days", val: 7, rate: 3.25, renew: true, cycles: 52 },
+      { label: "₹500 @ 3.25% × 52 Wks (Min FD)", principal: 500, days: 7, unit: "days", val: 7, rate: 3.25, renew: true, cycles: 52 },
+      { label: "₹50K @ 3.25% × 52 Wks (1 Yr)", principal: 50000, days: 7, unit: "days", val: 7, rate: 3.25, renew: true, cycles: 52 },
+      { label: "30 Days @ 3.50% × 12 Cycles", days: 30, unit: "days", val: 30, rate: 3.50, renew: true, cycles: 12 },
+      { label: "1 Year @ 6.25% × 1 Cycle", days: 365, unit: "years", val: 1, rate: 6.25, renew: false, cycles: 1 },
+      { label: "400 Days Special @ 7.00%", days: 400, unit: "days", val: 400, rate: 7.00, renew: false, cycles: 1 }
+    ];
+
+    const state = {
+      principal: 1000,
+      tenureVal: 7,
+      tenureUnit: "days",
+      tenureDays: 7,
+      isSenior: false,
+      rate: 3.25,
+      autoRenew: true,
+      rolloverMode: "compound", // 'compound' | 'simple'
+      cycles: 52,
+      roundingMode: "ceil", // 'ceil' | 'round' | 'exact'
+      taxRate: 0,
+      chartMode: "growth", // 'growth' | 'donut'
+      search: "",
+      activePresetIdx: 0,
+      ledger: [],
+      barRects: []
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    function formatINR(num, decimals = 2) {
+      return "₹" + Number(num).toLocaleString("en-IN", {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      });
+    }
+
+    function formatCompactSpan(totalDays) {
+      if (totalDays < 30) return `${totalDays}d`;
+      if (totalDays < 335) {
+        const m = totalDays / 30;
+        return Number.isInteger(m) ? `${m}M` : `~${m.toFixed(1).replace(/\.0$/, "")}M`;
+      }
+      const y = totalDays / 365;
+      const isExact = Math.abs(y - Math.round(y)) < 0.02;
+      const yStr = isExact ? `${Math.round(y)}` : `~${y.toFixed(1).replace(/\.0$/, "")}`;
+      return `${yStr} Yr${Math.round(y) > 1 || y > 1.2 ? "s" : ""}`;
+    }
+
+    function applyRounding(amount, mode) {
+      if (amount <= 0) return 0;
+      if (mode === "ceil") return Math.ceil(amount - 1e-9);
+      if (mode === "round") return Math.round(amount);
+      return amount;
+    }
+
+    function getSlabRate(days, isSenior) {
+      const clamped = Math.max(7, Math.min(3650, days));
+      const found = FD_SLABS.find(s => clamped <= s.maxDays) || FD_SLABS[FD_SLABS.length - 1];
+      return {
+        rate: +(found.rate + (isSenior ? 0.50 : 0)).toFixed(2),
+        label: found.label
+      };
+    }
+
+    function computeSingleCycleInterest(principal, days, annualRate) {
+      const r = annualRate / 100;
+      if (days < 181) {
+        // Simple interest for short-term FDs (< 6 months)
+        return principal * r * (days / 365);
+      } else {
+        // Quarterly compounding for FDs >= 181 days
+        const years = days / 365;
+        return principal * (Math.pow(1 + r / 4, 4 * years) - 1);
+      }
+    }
+
+    function runSimulation() {
+      const totalCycles = state.autoRenew ? state.cycles : 1;
+      const ledger = [];
+      let currentPrincipal = state.principal;
+      let exactPrincipal = state.principal;
+      let cumulativeRawInt = 0;
+      let cumulativeCreditedGrossInt = 0;
+      let cumulativeTax = 0;
+      let cumulativeNetInt = 0;
+      let cumulativeExactUnroundedInt = 0;
+
+      for (let c = 1; c <= totalCycles; c++) {
+        // Unrounded baseline path (for calculating exact rounding boost)
+        const exactCycleInt = computeSingleCycleInterest(exactPrincipal, state.tenureDays, state.rate);
+        const exactCycleNet = exactCycleInt * (1 - state.taxRate / 100);
+        cumulativeExactUnroundedInt += exactCycleInt;
+        if (state.rolloverMode === "compound") {
+          exactPrincipal += exactCycleNet;
+        }
+
+        // Actual path with selected rounding mode
+        const rawInt = computeSingleCycleInterest(currentPrincipal, state.tenureDays, state.rate);
+        const creditedGrossInt = applyRounding(rawInt, state.roundingMode);
+        const taxAmt = creditedGrossInt * (state.taxRate / 100);
+        const netInt = state.roundingMode === "exact"
+          ? (creditedGrossInt - taxAmt)
+          : Math.max(0, creditedGrossInt - Math.round(taxAmt));
+
+        cumulativeRawInt += rawInt;
+        cumulativeCreditedGrossInt += creditedGrossInt;
+        cumulativeTax += (creditedGrossInt - netInt);
+        cumulativeNetInt += netInt;
+
+        const closingGross = currentPrincipal + creditedGrossInt;
+        const closingNet = currentPrincipal + netInt;
+
+        ledger.push({
+          cycle: c,
+          daysElapsed: c * state.tenureDays,
+          opening: currentPrincipal,
+          rawInt: rawInt,
+          creditedGrossInt: creditedGrossInt,
+          cycleNetInt: netInt,
+          closingGross: closingGross,
+          closingNet: closingNet,
+          cumGrossInt: cumulativeCreditedGrossInt,
+          cumNetInt: cumulativeNetInt
+        });
+
+        if (state.rolloverMode === "compound") {
+          currentPrincipal = closingNet;
+        } else {
+          currentPrincipal = state.principal;
+        }
+      }
+
+      state.ledger = ledger;
+      return {
+        totalCycles,
+        totalDays: totalCycles * state.tenureDays,
+        firstCycle: ledger[0],
+        lastCycle: ledger[ledger.length - 1],
+        cumulativeRawInt,
+        cumulativeGrossInt: cumulativeCreditedGrossInt,
+        cumulativeTax,
+        cumulativeNetInt,
+        roundingGainDiff: cumulativeCreditedGrossInt - cumulativeExactUnroundedInt
+      };
+    }
+
+    function renderStaticControls() {
+      // Presets
+      const pBar = $("presetsBar");
+      PRESETS.forEach((p, idx) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "preset-btn" + (idx === 0 ? " active" : "");
+        btn.textContent = p.label;
+        btn.onclick = () => applyPreset(idx);
+        pBar.appendChild(btn);
+      });
+
+      // Principal Chips (Minimum ₹500)
+      const pVals = [500, 1000, 5000, 25000, 100000, 500000];
+      pVals.forEach(v => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "chip";
+        btn.dataset.val = v;
+        btn.textContent = v >= 100000 ? `₹${v / 100000}L` : v >= 1000 ? `₹${v / 1000}K` : `₹${v}`;
+        btn.onclick = () => {
+          state.principal = v;
+          state.activePresetIdx = -1;
+          syncInputs();
+          updateAll();
+        };
+        $("principalChips").appendChild(btn);
+      });
+
+      // Tenure Pills
+      const tPills = [
+        { label: "7 Days", val: 7, unit: "days", days: 7 },
+        { label: "14 Days", val: 14, unit: "days", days: 14 },
+        { label: "30 Days", val: 30, unit: "days", days: 30 },
+        { label: "45 Days", val: 45, unit: "days", days: 45 },
+        { label: "91 Days", val: 91, unit: "days", days: 91 },
+        { label: "180 Days", val: 180, unit: "days", days: 180 },
+        { label: "1 Year", val: 1, unit: "years", days: 365 },
+        { label: "400 Days", val: 400, unit: "days", days: 400 },
+        { label: "500 Days", val: 500, unit: "days", days: 500 }
+      ];
+      tPills.forEach(t => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "chip";
+        btn.dataset.days = t.days;
+        btn.textContent = t.label;
+        btn.onclick = () => {
+          state.tenureVal = t.val;
+          state.tenureUnit = t.unit;
+          state.tenureDays = t.days;
+          state.activePresetIdx = -1;
+          const slab = getSlabRate(t.days, state.isSenior);
+          state.rate = slab.rate;
+          $("slabHint").textContent = `Matched Tenure Slab (${slab.label}): ${slab.rate.toFixed(2)}% p.a.`;
+          syncInputs();
+          updateAll();
+        };
+        $("tenurePills").appendChild(btn);
+      });
+
+      renderCycleChips();
+    }
+
+    function renderCycleChips() {
+      const container = $("cycleChips");
+      container.innerHTML = "";
+      const cycleCounts = state.tenureDays <= 14
+        ? [1, 52, 261, 522, 1043]
+        : state.tenureDays <= 45
+          ? [1, 12, 60, 120, 240]
+          : state.tenureDays <= 180
+            ? [1, 4, 20, 40, 80]
+            : [1, 5, 10, 15, 20];
+
+      cycleCounts.forEach(c => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "chip";
+        btn.dataset.cycles = c;
+        const spanText = formatCompactSpan(c * state.tenureDays);
+        btn.textContent = c === 1 ? `1 Cycle (${spanText})` : `${c} (${spanText})`;
+        btn.onclick = () => {
+          state.autoRenew = true;
+          state.cycles = c;
+          state.activePresetIdx = -1;
+          syncInputs();
+          updateAll();
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    function applyPreset(idx) {
+      const p = PRESETS[idx];
+      state.activePresetIdx = idx;
+      if (p.principal) state.principal = p.principal;
+      state.tenureVal = p.val;
+      state.tenureUnit = p.unit;
+      state.tenureDays = p.days;
+      state.rate = +(p.rate + (state.isSenior ? 0.50 : 0)).toFixed(2);
+      state.autoRenew = p.renew;
+      state.cycles = p.cycles;
+      state.rolloverMode = "compound";
+      $("slabHint").textContent = `Preset applied: ${p.label}`;
+      renderCycleChips();
+      syncInputs();
+      updateAll();
+    }
+
+    function syncInputs() {
+      $("principalInput").value = state.principal;
+      $("principalSlider").value = state.principal;
+      $("tenureInput").value = state.tenureVal;
+      $("tenureUnit").value = state.tenureUnit;
+      $("rateInput").value = state.rate.toFixed(2);
+      $("rateSlider").value = state.rate;
+      $("autoRenewToggle").checked = state.autoRenew;
+      $("cyclesInput").value = state.cycles;
+      $("cyclesSlider").max = Math.max(1043, state.cycles);
+      $("cyclesSlider").value = state.cycles;
+
+      // Active states
+      document.querySelectorAll(".preset-btn").forEach((b, i) => b.classList.toggle("active", i === state.activePresetIdx));
+      document.querySelectorAll("#principalChips .chip").forEach(b => b.classList.toggle("active", Number(b.dataset.val) === state.principal));
+      document.querySelectorAll("#tenurePills .chip").forEach(b => b.classList.toggle("active", Number(b.dataset.days) === state.tenureDays));
+      document.querySelectorAll("#cycleChips .chip").forEach(b => b.classList.toggle("active", state.autoRenew && Number(b.dataset.cycles) === state.cycles));
+
+      $("catGeneral").classList.toggle("active", !state.isSenior);
+      $("catSenior").classList.toggle("active", state.isSenior);
+      $("modeCompound").classList.toggle("active", state.rolloverMode === "compound");
+      $("modeSimple").classList.toggle("active", state.rolloverMode === "simple");
+      $("autoRenewBody").classList.toggle("disabled-area", !state.autoRenew);
+
+      document.querySelectorAll("#roundingGroup .seg-btn").forEach(b => b.classList.toggle("active", b.dataset.round === state.roundingMode));
+      document.querySelectorAll("#taxGroup .seg-btn").forEach(b => b.classList.toggle("active", Number(b.dataset.tax) === state.taxRate));
+      $("chartGrowthBtn").classList.toggle("active", state.chartMode === "growth");
+      $("chartDonutBtn").classList.toggle("active", state.chartMode === "donut");
+    }
+
+    function updateAll() {
+      const sim = runSimulation();
+      const yrs = (sim.totalDays / 365).toFixed(2);
+      const dec = state.roundingMode === "exact" ? 2 : 0;
+
+      // Horizon Badge
+      $("horizonBadge").textContent = `${state.tenureDays} day${state.tenureDays > 1 ? "s" : ""} × ${sim.totalCycles} cycle${sim.totalCycles > 1 ? "s" : ""} = ${sim.totalDays} days (~${yrs} Yr)`;
+
+      // Rounding Hint & Boost Badge
+      const c1Raw = sim.firstCycle.rawInt;
+      const c1Cred = sim.firstCycle.creditedGrossInt;
+      const boostDiff = sim.roundingGainDiff;
+      $("roundingBoostBadge").textContent = boostDiff >= 0
+        ? `+${formatINR(boostDiff, 2)} vs exact`
+        : `${formatINR(boostDiff, 2)} vs exact`;
+
+      if (state.roundingMode === "ceil") {
+        $("roundingHint").textContent = `Cycle 1 raw ${formatINR(c1Raw, 2)} → rounds up to ${formatINR(c1Cred, 0)}/- & rolls over ${formatINR(state.principal + sim.firstCycle.cycleNetInt, 0)}`;
+      } else if (state.roundingMode === "round") {
+        $("roundingHint").textContent = `Cycle 1 raw ${formatINR(c1Raw, 2)} → nearest rupee ${formatINR(c1Cred, 0)}/- per cycle`;
+      } else {
+        $("roundingHint").textContent = `Exact paise mode: Cycle 1 credits ${formatINR(c1Raw, 2)} without rounding`;
+      }
+
+      // KPIs
+      const grossFinal = state.principal + sim.cumulativeGrossInt;
+      const netFinal = state.principal + sim.cumulativeNetInt;
+
+      // Effective annualized yield (CAGR)
+      const yearsExact = sim.totalDays / 365;
+      const effYield = yearsExact > 0
+        ? (Math.pow(grossFinal / state.principal, 1 / yearsExact) - 1) * 100
+        : state.rate;
+
+      $("kpiFinalVal").textContent = formatINR(grossFinal, dec);
+      $("kpiSingleCycleSub").textContent = `1st Cycle: ${formatINR(state.principal + c1Cred, dec)} (raw +${formatINR(c1Raw, 2)})`;
+      $("kpiTotalInt").textContent = `+${formatINR(sim.cumulativeGrossInt, dec)}`;
+      $("kpiEffYield").textContent = `Eff. Annual Yield: ${effYield.toFixed(2)}%`;
+      $("kpiDuration").textContent = `${sim.totalDays} Days`;
+      $("kpiDurationSub").textContent = `${sim.totalCycles} Cycle${sim.totalCycles > 1 ? "s" : ""} (~${yrs} Yr)`;
+      $("kpiNetVal").textContent = formatINR(netFinal, dec);
+      $("kpiNetIntSub").textContent = `Net Gain: +${formatINR(sim.cumulativeNetInt, dec)}`;
+      $("taxDeductedLabel").textContent = `Tax: ${formatINR(sim.cumulativeTax, dec)}`;
+
+      $("ledgerSubtitle").textContent = state.rolloverMode === "compound"
+        ? `Compounding Rollover (${state.roundingMode === "ceil" ? "Round-Up ₹1" : state.roundingMode === "round" ? "Nearest ₹1" : "Exact Paise"}): Reinvests Previous Principal + Net Credited Interest`
+        : "Simple Rollover: Principal stays fixed; Credited Interest is paid out each cycle";
+
+      renderLedger();
+      drawChart(sim);
+    }
+
+    function renderLedger() {
+      const q = state.search.trim().toLowerCase();
+      const dec = state.roundingMode === "exact" ? 2 : 0;
+      const filtered = q
+        ? state.ledger.filter(r => String(r.cycle).includes(q) || `cycle ${r.cycle}`.includes(q))
+        : state.ledger;
+
+      if (!filtered.length) {
+        $("ledgerBody").innerHTML = `<tr><td colspan="7" style="text-align:center;padding:18px;color:var(--muted);">No matching cycles found</td></tr>`;
+        return;
+      }
+
+      const maxRows = 300;
+      const isTruncated = filtered.length > maxRows;
+      const rows = isTruncated
+        ? [...filtered.slice(0, 150), ...filtered.slice(-150)]
+        : filtered;
+
+      let html = "";
+      rows.forEach((r, idx) => {
+        if (isTruncated && idx === 150) {
+          html += `<tr><td colspan="7" style="text-align:center;padding:10px;background:#FFF5F6;color:var(--primary);font-weight:700;">... Showing first 150 &amp; last 150 of ${filtered.length.toLocaleString("en-IN")} cycles (use filter box to search any cycle #) ...</td></tr>`;
+        }
+        const closingDisplay = state.rolloverMode === "compound"
+          ? r.closingNet
+          : (r.opening + r.cycleNetInt);
+        html += `
+          <tr>
+            <td class="bold-cell">Cycle ${r.cycle}</td>
+            <td>Day ${r.daysElapsed.toLocaleString("en-IN")}</td>
+            <td>${formatINR(r.opening, dec)}</td>
+            <td style="color:var(--muted);">+${formatINR(r.rawInt, 2)}</td>
+            <td class="gain-cell">+${formatINR(r.cycleNetInt, dec)}</td>
+            <td class="bold-cell">${formatINR(closingDisplay, dec)}</td>
+            <td class="gain-cell">+${formatINR(r.cumNetInt, dec)}</td>
+          </tr>
+        `;
+      });
+      $("ledgerBody").innerHTML = html;
+    }
+
+    // Crisp Responsive HTML5 Canvas Charting Engine
+    function drawChart(sim) {
+      const canvas = $("fdCanvas");
+      const wrap = $("canvasWrap");
+      const dpr = window.devicePixelRatio || 1;
+      const w = wrap.clientWidth;
+      const h = wrap.clientHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+
+      const ctx = canvas.getContext("2d");
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
+      state.barRects = [];
+
+      if (state.chartMode === "donut") {
+        $("chartLegend").innerHTML = `
+          <span><i class="legend-dot" style="background:#1F2937;"></i>Principal (${((state.principal / (state.principal + sim.cumulativeNetInt)) * 100).toFixed(1)}%)</span>
+          <span><i class="legend-dot" style="background:#9D1D27;"></i>Net Interest (${((sim.cumulativeNetInt / (state.principal + sim.cumulativeNetInt)) * 100).toFixed(1)}%)</span>
+        `;
+        drawDonut(ctx, w, h, state.principal, sim.cumulativeNetInt);
+        return;
+      }
+
+      $("chartLegend").innerHTML = `
+        <span><i class="legend-dot" style="background:#CBD5E1;"></i>Principal</span>
+        <span><i class="legend-dot" style="background:#9D1D27;"></i>Cumulative Net Interest</span>
+      `;
+
+      const data = state.ledger;
+      const pad = { top: 22, right: 18, bottom: 32, left: 68 };
+      const plotW = w - pad.left - pad.right;
+      const plotH = h - pad.top - pad.bottom;
+
+      const maxVal = Math.max(...data.map(d => state.principal + d.cumNetInt));
+      const minVal = state.principal * 0.96; // Zoom top growth slightly if interest is small so weekly steps are clearly visible
+      const useZoom = (maxVal - state.principal) / state.principal < 0.15;
+      const baseZero = useZoom ? minVal : 0;
+      const range = Math.max(1, maxVal - baseZero);
+
+      // Horizontal Gridlines & Y-Axis Labels
+      ctx.font = "600 11px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillStyle = "#64748B";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      const gridSteps = 4;
+      for (let i = 0; i <= gridSteps; i++) {
+        const val = baseZero + (range * i) / gridSteps;
+        const y = pad.top + plotH - (plotH * i) / gridSteps;
+        ctx.strokeStyle = "#E2E8F0";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, y);
+        ctx.lineTo(w - pad.right, y);
+        ctx.stroke();
+
+        const label = val >= 100000
+          ? `₹${(val / 100000).toFixed(2)}L`
+          : `₹${Math.round(val).toLocaleString("en-IN")}`;
+        ctx.fillText(label, pad.left - 8, y);
+      }
+
+      // Draw Stacked Bars per Cycle (downsampled cleanly for 1000+ cycles)
+      const n = data.length;
+      const maxBars = Math.max(40, Math.floor(plotW / 3));
+      const stride = n > maxBars ? Math.ceil(n / maxBars) : 1;
+      const sampled = [];
+      for (let i = 0; i < n; i += stride) {
+        sampled.push(data[i]);
+      }
+      if (sampled[sampled.length - 1] !== data[n - 1]) {
+        sampled.push(data[n - 1]);
+      }
+
+      const m = sampled.length;
+      const stepX = plotW / m;
+      const barW = Math.max(2, Math.min(28, stepX * 0.72));
+      const labelStep = m <= 14 ? 1 : Math.ceil(m / 10);
+
+      sampled.forEach((d, idx) => {
+        const xCenter = pad.left + stepX * idx + stepX / 2;
+        const x = xCenter - barW / 2;
+        const totalVal = state.principal + d.cumNetInt;
+
+        const yTotal = pad.top + plotH - ((totalVal - baseZero) / range) * plotH;
+        const yPrin = pad.top + plotH - ((state.principal - baseZero) / range) * plotH;
+        const yBottom = pad.top + plotH;
+
+        // Principal Base
+        ctx.fillStyle = "#CBD5E1";
+        ctx.fillRect(x, yPrin, barW, Math.max(0, yBottom - yPrin));
+
+        // Cumulative Interest Top
+        ctx.fillStyle = "#9D1D27";
+        ctx.fillRect(x, yTotal, barW, Math.max(1.5, yPrin - yTotal));
+
+        // Store hit zone for interactive tooltip
+        state.barRects.push({
+          x: pad.left + stepX * idx,
+          w: stepX,
+          data: d
+        });
+
+        // X-Axis Labels
+        if (idx === 0 || (idx + 1) % labelStep === 0 || idx === m - 1) {
+          ctx.fillStyle = "#64748B";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "top";
+          ctx.fillText(`C${d.cycle}`, xCenter, yBottom + 8);
+        }
+      });
+    }
+
+    function drawDonut(ctx, w, h, principal, interest) {
+      const total = principal + interest;
+      const cx = w / 2;
+      const cy = h / 2;
+      const radius = Math.min(w, h) * 0.34;
+      const innerR = radius * 0.62;
+
+      const prinAngle = (principal / total) * Math.PI * 2;
+      const start = -Math.PI / 2;
+
+      // Principal Arc
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, start, start + prinAngle);
+      ctx.arc(cx, cy, innerR, start + prinAngle, start, true);
+      ctx.closePath();
+      ctx.fillStyle = "#1F2937";
+      ctx.fill();
+
+      // Interest Arc
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, start + prinAngle, start + Math.PI * 2);
+      ctx.arc(cx, cy, innerR, start + Math.PI * 2, start + prinAngle, true);
+      ctx.closePath();
+      ctx.fillStyle = "#9D1D27";
+      ctx.fill();
+
+      // Center Summary
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "#6B7280";
+      ctx.font = "600 11px sans-serif";
+      ctx.fillText("NET MATURITY", cx, cy - 12);
+      ctx.fillStyle = "#111827";
+      ctx.font = "800 15px sans-serif";
+      ctx.fillText(formatINR(total, 0), cx, cy + 8);
+    }
+
+    // Interactive Canvas Tooltip
+    function setupCanvasHover() {
+      const canvas = $("fdCanvas");
+      const tip = $("chartTooltip");
+
+      const handleMove = (clientX, clientY) => {
+        if (state.chartMode !== "growth" || !state.barRects.length) {
+          tip.style.display = "none";
+          return;
+        }
+        const rect = canvas.getBoundingClientRect();
+        const mx = clientX - rect.left;
+        const my = clientY - rect.top;
+
+        const hit = state.barRects.find(b => mx >= b.x && mx <= b.x + b.w);
+        if (!hit) {
+          tip.style.display = "none";
+          return;
+        }
+        const d = hit.data;
+        const dec = state.roundingMode === "exact" ? 2 : 0;
+        const closing = state.rolloverMode === "compound" ? d.closingNet : (d.opening + d.cycleNetInt);
+        tip.innerHTML = `
+          <div style="font-weight:800;color:#FDE68A;margin-bottom:3px;">Cycle #${d.cycle} (Day ${d.daysElapsed})</div>
+          <div>Opening: <b>${formatINR(d.opening, dec)}</b></div>
+          <div>Raw Int.: <span style="color:#CBD5E1;">+${formatINR(d.rawInt, 2)}</span></div>
+          <div>Credited Int.: <b style="color:#6EE7B7;">+${formatINR(d.cycleNetInt, dec)}</b></div>
+          <div>Closing Value: <b>${formatINR(closing, dec)}</b></div>
+        `;
+        tip.style.display = "block";
+        const tipX = Math.min(rect.width - 195, Math.max(8, mx + 12));
+        const tipY = Math.min(rect.height - 95, Math.max(8, my - 45));
+        tip.style.left = tipX + "px";
+        tip.style.top = tipY + "px";
+      };
+
+      canvas.addEventListener("mousemove", (e) => handleMove(e.clientX, e.clientY));
+      canvas.addEventListener("mouseleave", () => { tip.style.display = "none"; });
+      canvas.addEventListener("touchstart", (e) => {
+        if (e.touches[0]) handleMove(e.touches[0].clientX, e.touches[0].clientY);
+      }, { passive: true });
+    }
+
+    function bindEvents() {
+      $("principalInput").addEventListener("input", (e) => {
+        const v = Math.max(500, Math.min(2500000, Number(e.target.value) || 500));
+        state.principal = v;
+        state.activePresetIdx = -1;
+        $("principalSlider").value = v;
+        syncInputs();
+        updateAll();
+      });
+      $("principalSlider").addEventListener("input", (e) => {
+        state.principal = Number(e.target.value);
+        state.activePresetIdx = -1;
+        syncInputs();
+        updateAll();
+      });
+
+      const handleTenureChange = () => {
+        const val = Math.max(1, Number($("tenureInput").value) || 1);
+        const unit = $("tenureUnit").value;
+        state.tenureVal = val;
+        state.tenureUnit = unit;
+        state.tenureDays = unit === "days" ? val : unit === "months" ? val * 30 : val * 365;
+        state.tenureDays = Math.max(7, Math.min(3650, state.tenureDays));
+        state.activePresetIdx = -1;
+        const slab = getSlabRate(state.tenureDays, state.isSenior);
+        state.rate = slab.rate;
+        $("slabHint").textContent = `Matched Tenure Slab (${slab.label}): ${slab.rate.toFixed(2)}% p.a.`;
+        renderCycleChips();
+        syncInputs();
+        updateAll();
+      };
+      $("tenureInput").addEventListener("input", handleTenureChange);
+      $("tenureUnit").addEventListener("change", handleTenureChange);
+
+      $("catGeneral").onclick = () => {
+        if (!state.isSenior) return;
+        state.isSenior = false;
+        state.rate = Math.max(2.5, +(state.rate - 0.50).toFixed(2));
+        syncInputs();
+        updateAll();
+      };
+      $("catSenior").onclick = () => {
+        if (state.isSenior) return;
+        state.isSenior = true;
+        state.rate = Math.min(8.5, +(state.rate + 0.50).toFixed(2));
+        syncInputs();
+        updateAll();
+      };
+
+      $("rateInput").addEventListener("input", (e) => {
+        const r = Math.max(2.5, Math.min(8.5, Number(e.target.value) || 3.25));
+        state.rate = r;
+        state.activePresetIdx = -1;
+        $("rateSlider").value = r;
+        $("slabHint").textContent = "Custom interest rate applied";
+        updateAll();
+      });
+      $("rateSlider").addEventListener("input", (e) => {
+        state.rate = Number(e.target.value);
+        state.activePresetIdx = -1;
+        $("rateInput").value = state.rate.toFixed(2);
+        $("slabHint").textContent = "Custom interest rate applied";
+        updateAll();
+      });
+
+      $("autoRenewToggle").addEventListener("change", (e) => {
+        state.autoRenew = e.target.checked;
+        state.activePresetIdx = -1;
+        syncInputs();
+        updateAll();
+      });
+
+      $("modeCompound").onclick = () => {
+        state.rolloverMode = "compound";
+        syncInputs();
+        updateAll();
+      };
+      $("modeSimple").onclick = () => {
+        state.rolloverMode = "simple";
+        syncInputs();
+        updateAll();
+      };
+
+      $("cyclesInput").addEventListener("input", (e) => {
+        const c = Math.max(1, Math.min(10000, Math.round(Number(e.target.value) || 1)));
+        state.cycles = c;
+        state.activePresetIdx = -1;
+        syncInputs();
+        updateAll();
+      });
+
+      $("cyclesSlider").addEventListener("input", (e) => {
+        state.cycles = Number(e.target.value);
+        state.activePresetIdx = -1;
+        syncInputs();
+        updateAll();
+      });
+
+      document.querySelectorAll("#roundingGroup .seg-btn").forEach(btn => {
+        btn.onclick = () => {
+          state.roundingMode = btn.dataset.round;
+          syncInputs();
+          updateAll();
+        };
+      });
+
+      document.querySelectorAll("#taxGroup .seg-btn").forEach(btn => {
+        btn.onclick = () => {
+          state.taxRate = Number(btn.dataset.tax);
+          syncInputs();
+          updateAll();
+        };
+      });
+
+      $("chartGrowthBtn").onclick = () => {
+        state.chartMode = "growth";
+        syncInputs();
+        updateAll();
+      };
+      $("chartDonutBtn").onclick = () => {
+        state.chartMode = "donut";
+        syncInputs();
+        updateAll();
+      };
+
+      $("ledgerSearch").addEventListener("input", (e) => {
+        state.search = e.target.value;
+        renderLedger();
+      });
+
+      $("resetBtn").onclick = () => {
+        state.principal = 1000;
+        state.isSenior = false;
+        state.roundingMode = "ceil";
+        state.taxRate = 0;
+        state.search = "";
+        $("ledgerSearch").value = "";
+        applyPreset(0);
+      };
+
+      window.addEventListener("resize", () => updateAll());
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      renderStaticControls();
+      bindEvents();
+      setupCanvasHover();
+      syncInputs();
+      updateAll();
+    });
+  </script>
+</body>
+</html>
