@@ -985,11 +985,10 @@
           <button type="button" class="chip" data-val="500000">₹5L</button>
         </div>
       </div>
-
-      <!-- 2. Single Cycle Tenure -->
+      <!-- 2. Tenure -->
       <div class="section-group">
         <div class="label-row">
-          <label for="tenureInput">Single Cycle Tenure</label>
+          <label for="tenureInput">Tenure</label>
           <div class="tenure-inline">
             <input type="number" id="tenureInput" class="num-input" min="1" max="3650" value="7" style="width:74px;" />
             <select id="tenureUnit" class="unit-select">
@@ -1001,13 +1000,14 @@
         </div>
         <div class="input-warn" id="tenureWarn"></div>
         <div class="chip-row" id="tenurePills">
-          <button type="button" class="chip active" data-days="7" data-rate="3.25">7D (1 Wk)</button>
-          <button type="button" class="chip" data-days="15" data-rate="3.75">15D</button>
-          <button type="button" class="chip" data-days="30" data-rate="4.25">30D</button>
-          <button type="button" class="chip" data-days="91" data-rate="4.75">91D</button>
-          <button type="button" class="chip" data-days="181" data-rate="5.50">181D</button>
-          <button type="button" class="chip" data-days="365" data-rate="6.25">1 Yr</button>
-          <button type="button" class="chip" data-days="400" data-rate="7.00">400D</button>
+          <button type="button" class="chip active" data-val="7" data-unit="days" data-days="7" data-rate="3.25">7D (1 Wk)</button>
+          <button type="button" class="chip" data-val="15" data-unit="days" data-days="15" data-rate="3.75">15D</button>
+          <button type="button" class="chip" data-val="30" data-unit="days" data-days="30" data-rate="4.25">30D</button>
+          <button type="button" class="chip" data-val="91" data-unit="days" data-days="91" data-rate="4.75">91D</button>
+          <button type="button" class="chip" data-val="181" data-unit="days" data-days="181" data-rate="5.50">181D</button>
+          <button type="button" class="chip" data-val="1" data-unit="years" data-days="365" data-rate="6.25">1 Yr</button>
+          <button type="button" class="chip" data-val="2" data-unit="years" data-days="730" data-rate="6.50">2 Yr</button>
+          <button type="button" class="chip" data-val="400" data-unit="days" data-days="400" data-rate="7.00">400D</button>
         </div>
       </div>
 
@@ -1019,6 +1019,7 @@
         </div>
         <div class="input-warn" id="rateWarn"></div>
         <input type="range" id="rateSlider" min="0.10" max="15.00" step="0.05" value="3.25" />
+        <div style="font-size:11px;color:var(--muted);" id="slabHint">Indicative tenure slab rate applied (editable up to 15%)</div>
       </div>
 
       <!-- 4. Auto-Renew Settings -->
@@ -1377,7 +1378,10 @@
 
       document.querySelectorAll(".preset-btn").forEach((b, i) => b.classList.toggle("active", i === state.activePresetIdx));
       document.querySelectorAll("#principalChips .chip").forEach(b => b.classList.toggle("active", Number(b.dataset.val) === state.principal));
-      document.querySelectorAll("#tenurePills .chip").forEach(b => b.classList.toggle("active", Number(b.dataset.days) === state.tenureDays));
+      document.querySelectorAll("#tenurePills .chip").forEach(b => {
+        const isMatch = Number(b.dataset.val) === state.tenureVal && b.dataset.unit === state.tenureUnit;
+        b.classList.toggle("active", isMatch);
+      });
 
       $("modeCompound").classList.toggle("active", state.rolloverMode === "compound");
       $("modeSimple").classList.toggle("active", state.rolloverMode === "simple");
@@ -1885,9 +1889,9 @@
 
       document.querySelectorAll("#tenurePills .chip").forEach(btn => {
         btn.onclick = () => {
-          state.tenureUnit = "days";
-          state.tenureVal = Number(btn.dataset.days);
-          state.tenureDays = state.tenureVal;
+          state.tenureUnit = btn.dataset.unit;
+          state.tenureVal = Number(btn.dataset.val);
+          state.tenureDays = getTenureInDays(state.tenureVal, state.tenureUnit);
           state.rate = Number(btn.dataset.rate);
           state.activePresetIdx = -1;
           setWarning("tenureWarn", "");
@@ -1939,14 +1943,19 @@
         if (e.key === "Enter") commitRate(e.target.value, true);
       });
 
-      $("rateSlider").oninput = () => {
-        state.rate = Number($("rateSlider").value);
+      const handleRateSlider = (e) => {
+        const val = parseFloat(e.target.value);
+        if (isNaN(val)) return;
+        state.rate = val;
         state.activePresetIdx = -1;
         setWarning("rateWarn", "");
         $("slabHint").textContent = "Custom interest rate applied";
-        syncInputs();
+        $("rateInput").value = val.toFixed(2);
+        syncInputs("rateInput");
         updateAll();
       };
+      $("rateSlider").addEventListener("input", handleRateSlider);
+      $("rateSlider").addEventListener("change", handleRateSlider);
 
       // Auto-Renew Toggle & Cycles Input (Non-blocking typing + min 1 cycle warning)
       $("autoRenewToggle").onchange = () => {
