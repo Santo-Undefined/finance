@@ -2,6 +2,8 @@
 
 A collection of interactive financial calculators and web utilities hosted on GitHub Pages from a single repository.
 
+Live site: [finance.santomonce.com](https://finance.santomonce.com)
+
 ## 🚀 Live Site Structure
 
 This repository is structured to support multiple independent web applications:
@@ -11,6 +13,7 @@ This repository is structured to support multiple independent web applications:
 | **Portal Hub** | `/` (`index.html`) | Landing page linking to all available tools |
 | **FD & Auto-Renew Calculator** | `/fd-calculator/` | Interactive Fixed Deposit and auto-renewal growth simulator |
 | **RD Calculator** | `/rd-calculator/` | Interactive recurring deposit maturity and interest calculator |
+| **Lifestyle Budget Planner** | `/lifestyle-budget-planner/` | Interactive monthly budget planner for essentials, lifestyle spending, liabilities, and savings |
 
 ### How to Add More Sites
 To add another site or calculator to this repo:
@@ -23,4 +26,4 @@ To add another site or calculator to this repo:
 2. Under **Build and deployment** > **Source**, select **Deploy from a branch**.
 3. Choose the `main` branch and `/ (root)` folder, then click **Save**.
 4. GitHub Pages will publish the site at:
-   `https://<your-username>.github.io/finance/`
+   `https://finance.santomonce.com`
