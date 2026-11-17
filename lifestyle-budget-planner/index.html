@@ -1,0 +1,1979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lifestyle Budget Planner</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    /* Custom Range Slider Styling */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      min-width: 0;
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #2563eb;
+      border: 2px solid #ffffff;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.25);
+      cursor: pointer;
+      transition: transform 0.12s ease, background-color 0.12s ease;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.12);
+      background: #1d4ed8;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #2563eb;
+      border: 2px solid #ffffff;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.25);
+      cursor: pointer;
+    }
+
+    /* Hide spin buttons on numeric inputs so values never clip */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+
+    /* Unified slider + value box layout so digits never overflow */
+    .field-control-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-width: 0;
+    }
+
+    .field-slider-wrap {
+      flex: 1 1 auto;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+    }
+
+    .field-amount-box {
+      flex: 0 0 116px;
+      width: 116px;
+      min-width: 116px;
+      max-width: 116px;
+      display: flex;
+      align-items: center;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 5px 8px;
+      overflow: hidden;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .field-amount-box:focus-within {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.16);
+    }
+
+    .field-amount-box input {
+      width: 100%;
+      min-width: 0;
+      border: none;
+      outline: none;
+      background: transparent;
+      text-align: right;
+      font-weight: 700;
+      font-size: 13px;
+      color: #0f172a;
+      font-variant-numeric: tabular-nums;
+      padding: 0;
+    }
+
+    @media (max-width: 640px) {
+      input[type="number"],
+      input[type="text"],
+      select {
+        font-size: 16px !important;
+      }
+
+      .field-amount-box {
+        flex: 0 0 124px;
+        width: 124px;
+        min-width: 124px;
+        max-width: 124px;
+        padding: 6px 9px;
+      }
+
+      .field-amount-box input {
+        font-size: 15px !important;
+      }
+    }
+  </style>
+</head>
+<body class="pb-24 lg:pb-10">
+  <!-- Top Header -->
+  <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center font-extrabold text-lg shadow-inner shrink-0">
+          ₹
+        </div>
+        <div class="min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h1 class="text-base sm:text-lg font-bold tracking-tight leading-tight">
+              Lifestyle Budget Planner
+            </h1>
+            <span id="activeProfileBadge" class="hidden text-[11px] font-semibold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 truncate max-w-[180px]">
+              Default Plan
+            </span>
+          </div>
+          <p class="text-xs text-slate-400 hidden sm:block">
+            Plan across Essentials, Lifestyle, Liabilities &amp; Savings, and save multiple profiles
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 flex-wrap">
+        <button
+          id="openProfilesBtn"
+          type="button"
+          class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-xs font-semibold text-white border border-slate-700 transition flex items-center gap-1.5 cursor-pointer"
+        >
+          <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+          </svg>
+          <span>Profiles</span>
+          <span id="profileCountPill" class="px-1.5 py-0.2 rounded-full bg-blue-600/30 text-blue-200 text-[10px] font-bold">0</span>
+        </button>
+
+        <button
+          id="copySummaryBtn"
+          type="button"
+          class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-xs font-semibold text-slate-100 border border-slate-700 transition flex items-center gap-1.5 cursor-pointer"
+        >
+          <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+          <span>Export Split</span>
+        </button>
+
+        <button
+          id="resetDefaultBtn"
+          type="button"
+          class="px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-xs font-semibold text-white transition cursor-pointer"
+        >
+          Reset
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Saved Profiles Modal -->
+  <div
+    id="profilesModal"
+    class="fixed inset-0 z-50 hidden bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="profilesModalTitle"
+  >
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-lg overflow-hidden">
+      <div class="px-5 py-4 bg-slate-900 text-white flex items-center justify-between">
+        <div>
+          <h2 id="profilesModalTitle" class="text-base font-bold">Saved Budget Profiles</h2>
+          <p class="text-xs text-slate-400">Save your current setup or load a previously saved plan</p>
+        </div>
+        <button
+          id="closeProfilesBtn"
+          type="button"
+          aria-label="Close modal"
+          class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-5 max-h-[80vh] overflow-y-auto">
+        <!-- Save Current Plan Form -->
+        <form id="saveProfileForm" class="bg-blue-50/70 border border-blue-200/80 rounded-xl p-3.5 space-y-2.5">
+          <label for="profileNameInput" class="block text-xs font-bold text-slate-800">
+            Save Current Plan as Profile
+          </label>
+          <div class="flex gap-2">
+            <input
+              id="profileNameInput"
+              type="text"
+              required
+              maxlength="42"
+              placeholder="e.g., Bangalore PG Phase 1, Post-Debt Bike Plan"
+              class="flex-1 min-w-0 rounded-xl bg-white border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-blue-600"
+            />
+            <button
+              type="submit"
+              class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shrink-0 transition cursor-pointer"
+            >
+              Save
+            </button>
+          </div>
+          <p class="text-[11px] text-slate-500">
+            Entering an existing profile name will update/overwrite that profile.
+          </p>
+        </form>
+
+        <!-- Saved Profiles List -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Your Saved Profiles</h3>
+            <span id="savedProfilesCountText" class="text-xs text-slate-400">0 saved</span>
+          </div>
+          <div id="savedProfilesList" class="space-y-2"></div>
+        </div>
+
+        <!-- JSON File Backup & Restore -->
+        <div class="pt-3.5 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <span class="text-xs font-bold text-slate-700 block">File Backup (.JSON)</span>
+            <span class="text-[11px] text-slate-400">Transfer profiles across devices or keep permanently</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button
+              id="downloadJsonBtn"
+              type="button"
+              class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-800 border border-slate-300 transition cursor-pointer"
+            >
+              Download .JSON
+            </button>
+            <label class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-xs font-semibold text-white transition cursor-pointer">
+              <span>Load .JSON</span>
+              <input id="importJsonInput" type="file" accept=".json,application/json" class="hidden" />
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Banner -->
+  <div
+    id="toastBanner"
+    class="fixed top-20 right-4 z-50 hidden bg-slate-900 text-white text-xs font-medium px-4 py-2.5 rounded-xl shadow-lg border border-slate-700 transition-opacity"
+  ></div>
+
+  <!-- Main Content Grid -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 pt-5 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    <!-- Left Column: Income, Allocation Mode & Custom Fields -->
+    <section class="lg:col-span-5 space-y-5">
+      <!-- Monthly Income & Allocation Mode Card -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm">
+        <div class="flex items-center justify-between gap-2 mb-2">
+          <label for="incomeInput" class="text-xs font-bold uppercase tracking-wider text-slate-500">
+            Monthly Take-Home Income
+          </label>
+          <span id="annualIncomeTag" class="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full">
+            ₹7,20,000 / yr
+          </span>
+        </div>
+
+        <div class="flex items-center gap-2 bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-600/15 transition min-w-0 overflow-hidden">
+          <span class="text-slate-500 font-bold text-base shrink-0">₹</span>
+          <input
+            id="incomeInput"
+            type="text"
+            inputmode="numeric"
+            value="60,000"
+            aria-label="Monthly Take-Home Income"
+            class="w-full min-w-0 bg-transparent font-extrabold text-lg sm:text-xl text-slate-900 outline-none tabular-nums"
+          />
+          <span class="text-xs font-medium text-slate-400 shrink-0">/ month</span>
+        </div>
+
+        <div class="mt-3">
+          <input
+            id="incomeSlider"
+            type="range"
+            min="10000"
+            max="250000"
+            step="1000"
+            value="60000"
+            aria-label="Monthly Income Slider"
+          />
+          <div class="flex justify-between text-[11px] text-slate-400 mt-1 font-medium">
+            <span>₹10K</span>
+            <span>₹60K</span>
+            <span>₹1.25L</span>
+            <span>₹2.5L</span>
+          </div>
+        </div>
+
+        <!-- Global Allocation Unit Toggle (₹ Rupees vs % Percentage) -->
+        <div class="mt-4 pt-3.5 border-t border-slate-100 flex items-center justify-between gap-2">
+          <div>
+            <span class="text-xs font-bold text-slate-700 block">Allocate Funds By</span>
+            <span class="text-[11px] text-slate-400">Adjust fields in exact ₹ or % of income</span>
+          </div>
+          <div class="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200 shrink-0">
+            <button
+              type="button"
+              id="allocModeInrBtn"
+              class="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-900 shadow-xs transition cursor-pointer"
+            >
+              ₹ Amount
+            </button>
+            <button
+              type="button"
+              id="allocModePctBtn"
+              class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition cursor-pointer"
+            >
+              % of Income
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Custom Field Form Card -->
+      <div class="bg-blue-50/70 rounded-2xl border border-blue-200/80 p-4 sm:p-5 shadow-sm">
+        <div class="flex items-center justify-between gap-2 mb-3">
+          <h2 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center text-sm font-bold">+</span>
+            Add Custom Field
+          </h2>
+          <span class="text-[11px] font-medium text-blue-700">Auto-saved locally</span>
+        </div>
+
+        <form id="addFieldForm" class="space-y-3">
+          <div>
+            <label for="newFieldName" class="block text-xs font-semibold text-slate-700 mb-1">
+              Field Name
+            </label>
+            <input
+              id="newFieldName"
+              type="text"
+              required
+              maxlength="40"
+              placeholder="e.g., Road Bike Fund, Term Insurance, Credit Card"
+              class="w-full rounded-xl bg-white border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/15"
+            />
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label for="newFieldCategory" class="block text-xs font-semibold text-slate-700 mb-1">
+                Category Bucket
+              </label>
+              <select
+                id="newFieldCategory"
+                class="w-full rounded-xl bg-white border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-600"
+              >
+                <option value="essentials">Essentials</option>
+                <option value="lifestyle">Lifestyle</option>
+                <option value="liabilities">Liabilities</option>
+                <option value="savings" selected>Savings &amp; Investments</option>
+              </select>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label for="newFieldAmount" class="text-xs font-semibold text-slate-700">
+                  Monthly Allocation
+                </label>
+                <div class="inline-flex rounded-md bg-white border border-slate-300 p-0.5">
+                  <button
+                    type="button"
+                    id="newUnitInrBtn"
+                    class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-600 text-white cursor-pointer"
+                  >
+                    ₹ INR
+                  </button>
+                  <button
+                    type="button"
+                    id="newUnitPctBtn"
+                    class="px-1.5 py-0.5 rounded text-[10px] font-semibold text-slate-600 cursor-pointer"
+                  >
+                    % Share
+                  </button>
+                </div>
+              </div>
+              <div class="flex items-center rounded-xl bg-white border border-slate-300 px-3 py-2 focus-within:border-blue-600">
+                <span id="newFieldUnitPrefix" class="text-slate-400 font-semibold text-sm mr-1">₹</span>
+                <input
+                  id="newFieldAmount"
+                  type="number"
+                  min="0"
+                  step="any"
+                  required
+                  placeholder="5000"
+                  class="w-full min-w-0 bg-transparent text-sm font-bold text-slate-900 outline-none tabular-nums"
+                />
+                <span id="newFieldUnitSuffix" class="hidden text-slate-400 font-semibold text-sm ml-1">%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+            <div>
+              <label for="newFieldMax" class="block text-xs font-semibold text-slate-700 mb-1">
+                Slider Max (Optional ₹)
+              </label>
+              <input
+                id="newFieldMax"
+                type="number"
+                min="500"
+                step="500"
+                placeholder="Auto"
+                class="w-full rounded-xl bg-white border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-blue-600 tabular-nums"
+              />
+            </div>
+
+            <div>
+              <span class="block text-xs font-semibold text-slate-700 mb-1.5">Tag Color</span>
+              <div id="colorPickerGroup" class="flex items-center gap-2">
+                <button type="button" data-color="#2563eb" class="color-swatch w-6 h-6 rounded-full bg-blue-600 ring-2 ring-offset-2 ring-blue-600 cursor-pointer" aria-label="Blue"></button>
+                <button type="button" data-color="#10b981" class="color-swatch w-6 h-6 rounded-full bg-emerald-500 cursor-pointer" aria-label="Emerald"></button>
+                <button type="button" data-color="#f59e0b" class="color-swatch w-6 h-6 rounded-full bg-amber-500 cursor-pointer" aria-label="Amber"></button>
+                <button type="button" data-color="#e11d48" class="color-swatch w-6 h-6 rounded-full bg-rose-600 cursor-pointer" aria-label="Rose"></button>
+                <button type="button" data-color="#8b5cf6" class="color-swatch w-6 h-6 rounded-full bg-violet-500 cursor-pointer" aria-label="Violet"></button>
+                <button type="button" data-color="#06b6d4" class="color-swatch w-6 h-6 rounded-full bg-cyan-500 cursor-pointer" aria-label="Cyan"></button>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            class="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-semibold text-sm shadow-sm transition cursor-pointer"
+          >
+            + Add Field to Budget
+          </button>
+        </form>
+
+        <!-- One-Tap Quick Add Suggestions -->
+        <div class="mt-3 pt-3 border-t border-blue-200/70">
+          <p class="text-[11px] font-semibold text-slate-500 mb-1.5">Quick-Add Suggestions:</p>
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" data-quick-name="Road Bike Fund" data-quick-cat="savings" data-quick-amt="10000" data-quick-color="#06b6d4" class="quick-add-chip px-2.5 py-1 rounded-lg bg-white hover:bg-blue-100/70 text-[11px] font-semibold text-slate-700 border border-blue-200 transition cursor-pointer">
+              + Road Bike ₹10,000
+            </button>
+            <button type="button" data-quick-name="Savings Debt EMI" data-quick-cat="liabilities" data-quick-amt="15000" data-quick-color="#e11d48" class="quick-add-chip px-2.5 py-1 rounded-lg bg-white hover:bg-blue-100/70 text-[11px] font-semibold text-slate-700 border border-blue-200 transition cursor-pointer">
+              + Debt Payoff ₹15,000
+            </button>
+            <button type="button" data-quick-name="Liquid Emergency" data-quick-cat="savings" data-quick-amt="8000" data-quick-color="#10b981" class="quick-add-chip px-2.5 py-1 rounded-lg bg-white hover:bg-blue-100/70 text-[11px] font-semibold text-slate-700 border border-blue-200 transition cursor-pointer">
+              + Emergency ₹8,000
+            </button>
+            <button type="button" data-quick-name="Health & Term Cover" data-quick-cat="essentials" data-quick-amt="1500" data-quick-color="#6366f1" class="quick-add-chip px-2.5 py-1 rounded-lg bg-white hover:bg-blue-100/70 text-[11px] font-semibold text-slate-700 border border-blue-200 transition cursor-pointer">
+              + Insurance ₹1,500
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Custom Fields List Grouped by 4 Categories -->
+      <div id="fieldsContainer" class="space-y-4"></div>
+    </section>
+
+    <!-- Right Column: Visual Money-Split Analytics -->
+    <section id="analyticsSection" class="lg:col-span-7 space-y-5 lg:sticky lg:top-20">
+      <!-- Top KPI Summary Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-semibold text-slate-500">Total Allocated</span>
+            <span id="kpiAllocatedPct" class="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">
+              100%
+            </span>
+          </div>
+          <div id="kpiAllocatedAmt" class="text-xl font-extrabold text-slate-900 tabular-nums">
+            ₹60,000
+          </div>
+          <p class="text-[11px] text-slate-400 mt-1">
+            Across <span id="kpiActiveCount" class="font-semibold text-slate-600">0</span> active fields
+          </p>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-semibold text-slate-500">Total Outflows</span>
+            <span id="kpiExpensesPct" class="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">
+              62.5%
+            </span>
+          </div>
+          <div id="kpiExpensesAmt" class="text-xl font-extrabold text-slate-900 tabular-nums">
+            ₹37,500
+          </div>
+          <p class="text-[11px] text-slate-400 mt-1">
+            Essentials + Lifestyle + Liabilities
+          </p>
+        </div>
+
+        <div id="kpiSurplusCard" class="bg-white rounded-2xl border border-emerald-200 p-4 shadow-sm">
+          <div class="flex items-center justify-between mb-1">
+            <span id="kpiSurplusLabel" class="text-xs font-semibold text-emerald-700">Savings &amp; Free Cash</span>
+            <span id="kpiSurplusPct" class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">
+              37.5%
+            </span>
+          </div>
+          <div id="kpiSurplusAmt" class="text-xl font-extrabold text-emerald-600 tabular-nums">
+            ₹22,500
+          </div>
+          <p id="kpiBufferSubtext" class="text-[11px] text-slate-500 mt-1">
+            Unallocated buffer: ₹0
+          </p>
+        </div>
+      </div>
+
+      <!-- Interactive Donut Chart & Breakdown Card -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+          <div>
+            <h2 class="text-sm font-bold text-slate-900">Interactive Money-Split Ring</h2>
+            <p class="text-xs text-slate-500">Hover or tap any slice to inspect exact share</p>
+          </div>
+          <div class="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200">
+            <button type="button" id="modeFieldsBtn" class="px-3 py-1 rounded-lg text-xs font-bold bg-white text-slate-900 shadow-sm transition cursor-pointer">
+              By Field
+            </button>
+            <button type="button" id="modeBucketsBtn" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition cursor-pointer">
+              By Bucket
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
+          <!-- Responsive Canvas Donut -->
+          <div class="md:col-span-5 flex flex-col items-center justify-center relative">
+            <div id="canvasWrapper" class="w-full max-w-[240px] aspect-square relative flex items-center justify-center">
+              <canvas id="splitDonutCanvas"></canvas>
+            </div>
+          </div>
+
+          <!-- Interactive Legend List -->
+          <div class="md:col-span-7 space-y-2 max-h-[340px] overflow-y-auto pr-1" id="donutLegendList"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Mobile Sticky Bottom Summary Bar -->
+  <div class="fixed bottom-0 inset-x-0 z-40 bg-slate-900 text-white border-t border-slate-800 px-4 py-2.5 flex items-center justify-between lg:hidden shadow-xl">
+    <div>
+      <span class="text-[10px] uppercase tracking-wider text-slate-400 block">Allocated</span>
+      <span id="mobileAllocatedPct" class="text-sm font-extrabold text-white tabular-nums">100%</span>
+    </div>
+    <div>
+      <span id="mobileBufferLabel" class="text-[10px] uppercase tracking-wider text-slate-400 block">Unallocated</span>
+      <span id="mobileBufferAmt" class="text-sm font-extrabold text-emerald-400 tabular-nums">₹0</span>
+    </div>
+    <a
+      href="#analyticsSection"
+      class="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-xs font-bold text-white shadow-sm"
+    >
+      View Split ↑
+    </a>
+  </div>
+
+  <script>
+    (function () {
+      const STORAGE_KEY = 'lifestyle_money_split_v4';
+      const PROFILES_STORAGE_KEY = 'lifestyle_budget_profiles_v1';
+
+      const CATEGORY_ORDER = ['essentials', 'lifestyle', 'liabilities', 'savings'];
+
+      const CATEGORY_META = {
+        essentials: {
+          title: 'Essentials',
+          subtitle: 'Fixed rent, PG, utilities & daily staples',
+          badgeBg: 'bg-blue-50 text-blue-700 border-blue-200',
+          chartColor: '#2563eb'
+        },
+        lifestyle: {
+          title: 'Lifestyle',
+          subtitle: 'Sports, cycling, dining out & upskilling',
+          badgeBg: 'bg-amber-50 text-amber-700 border-amber-200',
+          chartColor: '#f59e0b'
+        },
+        liabilities: {
+          title: 'Liabilities',
+          subtitle: 'Debt payoff, savings payback & EMIs',
+          badgeBg: 'bg-rose-50 text-rose-700 border-rose-200',
+          chartColor: '#e11d48'
+        },
+        savings: {
+          title: 'Savings & Investments',
+          subtitle: 'SIPs, emergency liquid fund & goal sinking funds',
+          badgeBg: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+          chartColor: '#10b981'
+        }
+      };
+
+      const PRESETS = {
+        pg_phase1: {
+          income: 60000,
+          fields: [
+            { id: 'f1', name: 'Single-Room PG (Rent + 3 Meals)', category: 'essentials', amount: 13000, max: 25000, color: '#2563eb', enabled: true },
+            { id: 'f2', name: 'Commute, Recharge & Care', category: 'essentials', amount: 1000, max: 5000, color: '#3b82f6', enabled: true },
+            { id: 'f3', name: 'Extra Protein, Juice & Snacks', category: 'lifestyle', amount: 2000, max: 8000, color: '#f59e0b', enabled: true },
+            { id: 'f4', name: 'Football Turf & Cycling Upkeep', category: 'lifestyle', amount: 1500, max: 6000, color: '#eab308', enabled: true },
+            { id: 'f5', name: 'Upskilling & Courses', category: 'lifestyle', amount: 3000, max: 10000, color: '#8b5cf6', enabled: true },
+            { id: 'f6', name: 'Savings Debt Payoff (₹60K)', category: 'liabilities', amount: 20000, max: 35000, color: '#e11d48', enabled: true },
+            { id: 'f7', name: 'Core Equity SIPs', category: 'savings', amount: 15000, max: 40000, color: '#10b981', enabled: true },
+            { id: 'f8', name: 'Emergency Liquid Buffer', category: 'savings', amount: 4500, max: 25000, color: '#06b6d4', enabled: true }
+          ]
+        }
+      };
+
+      let state = {
+        income: 60000,
+        fields: [],
+        allocMode: 'inr', // 'inr' or 'pct'
+        newFieldUnit: 'inr', // 'inr' or 'pct'
+        chartMode: 'fields', // 'fields' or 'buckets'
+        selectedColor: '#2563eb',
+        hoveredSliceIndex: -1,
+        collapsedCats: {}, // e.g., { essentials: false, lifestyle: true }
+        activeProfileName: ''
+      };
+
+      let savedProfiles = [];
+      let currentSlices = [];
+
+      // Normalize legacy category keys if loading older local storage data
+      function normalizeCategoryKey(cat) {
+        if (cat === 'living') return 'essentials';
+        if (cat === 'goals') return 'savings';
+        if (CATEGORY_ORDER.includes(cat)) return cat;
+        return 'savings';
+      }
+
+      // Format number in Indian Rupee style
+      function formatINR(num) {
+        const rounded = Math.round(Number(num) || 0);
+        const sign = rounded < 0 ? '-' : '';
+        return sign + '₹' + Math.abs(rounded).toLocaleString('en-IN');
+      }
+
+      // Format plain comma-separated Indian integer
+      function formatIndianNumber(num) {
+        const rounded = Math.max(0, Math.round(Number(num) || 0));
+        return rounded.toLocaleString('en-IN');
+      }
+
+      // Format clean percentage up to 1 decimal place
+      function formatPctValue(pct) {
+        const clamped = Math.max(0, Number(pct) || 0);
+        return Number.isInteger(clamped) ? String(clamped) : clamped.toFixed(1).replace(/\.0$/, '');
+      }
+
+      // Show brief non-blocking notification toast
+      let toastTimer = null;
+      function showToast(msg, isError = false) {
+        const el = document.getElementById('toastBanner');
+        if (!el) return;
+        el.textContent = msg;
+        el.className = `fixed top-20 right-4 z-50 text-xs font-semibold px-4 py-2.5 rounded-xl shadow-lg border transition-opacity ${
+          isError ? 'bg-rose-900 text-rose-100 border-rose-700' : 'bg-slate-900 text-white border-slate-700'
+        }`;
+        el.classList.remove('hidden');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          el.classList.add('hidden');
+        }, 2400);
+      }
+
+      // Persist active state to LocalStorage
+      function saveState() {
+        try {
+          localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({
+              income: state.income,
+              fields: state.fields,
+              allocMode: state.allocMode,
+              chartMode: state.chartMode,
+              collapsedCats: state.collapsedCats,
+              activeProfileName: state.activeProfileName
+            })
+          );
+        } catch (e) {
+          // Ignore storage quota errors
+        }
+        syncActiveProfileBadge();
+      }
+
+      // Load saved profiles array from LocalStorage
+      function loadSavedProfiles() {
+        try {
+          const raw = localStorage.getItem(PROFILES_STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+              savedProfiles = parsed;
+            }
+          }
+        } catch (e) {
+          savedProfiles = [];
+        }
+        syncProfileCountUI();
+      }
+
+      // Persist saved profiles array to LocalStorage
+      function persistProfilesToStorage() {
+        try {
+          localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(savedProfiles));
+        } catch (e) {
+          showToast('Could not save profile to browser storage', true);
+        }
+        syncProfileCountUI();
+      }
+
+      // Sync profile count badge & active profile pill in header
+      function syncProfileCountUI() {
+        const pill = document.getElementById('profileCountPill');
+        if (pill) pill.textContent = savedProfiles.length;
+        const countText = document.getElementById('savedProfilesCountText');
+        if (countText) countText.textContent = `${savedProfiles.length} saved`;
+      }
+
+      function syncActiveProfileBadge() {
+        const badge = document.getElementById('activeProfileBadge');
+        if (!badge) return;
+        if (state.activeProfileName) {
+          badge.textContent = state.activeProfileName;
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
+      }
+
+      // Save current state as a named profile
+      function saveCurrentAsProfile(rawName) {
+        const name = rawName.trim();
+        if (!name) return;
+
+        const snapshot = {
+          id: 'prof_' + Date.now(),
+          name,
+          updatedAt: new Date().toISOString(),
+          income: state.income,
+          allocMode: state.allocMode,
+          chartMode: state.chartMode,
+          collapsedCats: { ...state.collapsedCats },
+          fields: state.fields.map(f => ({ ...f }))
+        };
+
+        const existingIdx = savedProfiles.findIndex(p => p.name.toLowerCase() === name.toLowerCase());
+        if (existingIdx >= 0) {
+          snapshot.id = savedProfiles[existingIdx].id;
+          savedProfiles[existingIdx] = snapshot;
+          showToast(`Updated profile "${name}"`);
+        } else {
+          savedProfiles.unshift(snapshot);
+          showToast(`Saved profile "${name}"`);
+        }
+
+        state.activeProfileName = name;
+        persistProfilesToStorage();
+        saveState();
+        renderProfilesList();
+      }
+
+      // Load a saved profile by ID
+      function loadProfileById(id) {
+        const prof = savedProfiles.find(p => p.id === id);
+        if (!prof) return;
+
+        state.income = Number(prof.income) || 60000;
+        state.fields = Array.isArray(prof.fields)
+          ? prof.fields.map(f => ({ ...f, category: normalizeCategoryKey(f.category) }))
+          : [];
+        state.allocMode = prof.allocMode === 'pct' ? 'pct' : 'inr';
+        state.chartMode = prof.chartMode || 'fields';
+        state.collapsedCats = prof.collapsedCats && typeof prof.collapsedCats === 'object' ? { ...prof.collapsedCats } : {};
+        state.activeProfileName = prof.name;
+        state.hoveredSliceIndex = -1;
+
+        syncIncomeInputs();
+        syncAllocModeButtons();
+        renderFieldsList();
+        recalculateAndRender();
+        saveState();
+        closeProfilesModal();
+        showToast(`Loaded "${prof.name}"`);
+      }
+
+      // Render saved profiles inside modal
+      function renderProfilesList() {
+        const listEl = document.getElementById('savedProfilesList');
+        if (!listEl) return;
+
+        if (savedProfiles.length === 0) {
+          listEl.innerHTML = `
+            <div class="p-4 rounded-xl bg-slate-50 border border-dashed border-slate-300 text-center">
+              <p class="text-xs font-semibold text-slate-600">No saved profiles yet</p>
+              <p class="text-[11px] text-slate-400 mt-0.5">Name your current setup above and click Save to store it here.</p>
+            </div>
+          `;
+          return;
+        }
+
+        listEl.innerHTML = savedProfiles.map(prof => {
+          const activeCount = Array.isArray(prof.fields) ? prof.fields.filter(f => f.enabled).length : 0;
+          const totalAlloc = Array.isArray(prof.fields)
+            ? prof.fields.filter(f => f.enabled).reduce((s, f) => s + (Number(f.amount) || 0), 0)
+            : 0;
+          const isCurrent = state.activeProfileName && state.activeProfileName.toLowerCase() === prof.name.toLowerCase();
+          const dateLabel = prof.updatedAt
+            ? new Date(prof.updatedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+            : '';
+
+          return `
+            <div class="p-3 rounded-xl border ${isCurrent ? 'bg-blue-50/60 border-blue-300' : 'bg-slate-50 border-slate-200'} flex items-center justify-between gap-3">
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-sm font-bold text-slate-900 truncate">${escapeHtml(prof.name)}</span>
+                  ${isCurrent ? '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-600 text-white shrink-0">Active</span>' : ''}
+                </div>
+                <p class="text-[11px] text-slate-500 mt-0.5 tabular-nums">
+                  Income: <strong class="text-slate-700">${formatINR(prof.income)}</strong> • Allocated: <strong class="text-slate-700">${formatINR(totalAlloc)}</strong> (${activeCount} fields)${dateLabel ? ` • ${dateLabel}` : ''}
+                </p>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button
+                  type="button"
+                  data-profile-action="load"
+                  data-profile-id="${prof.id}"
+                  class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition cursor-pointer"
+                >
+                  Load
+                </button>
+                <button
+                  type="button"
+                  data-profile-action="delete"
+                  data-profile-id="${prof.id}"
+                  aria-label="Delete ${escapeHtml(prof.name)}"
+                  title="Delete profile"
+                  class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function openProfilesModal() {
+        const modal = document.getElementById('profilesModal');
+        const input = document.getElementById('profileNameInput');
+        if (!modal) return;
+        renderProfilesList();
+        if (input) {
+          input.value = state.activeProfileName || '';
+        }
+        modal.classList.remove('hidden');
+      }
+
+      function closeProfilesModal() {
+        const modal = document.getElementById('profilesModal');
+        if (modal) modal.classList.add('hidden');
+      }
+
+      // Sync global allocation mode toggle buttons
+      function syncAllocModeButtons() {
+        const inrBtn = document.getElementById('allocModeInrBtn');
+        const pctBtn = document.getElementById('allocModePctBtn');
+        if (!inrBtn || !pctBtn) return;
+
+        if (state.allocMode === 'pct') {
+          pctBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-900 shadow-xs transition cursor-pointer';
+          inrBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition cursor-pointer';
+        } else {
+          inrBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-900 shadow-xs transition cursor-pointer';
+          pctBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition cursor-pointer';
+        }
+      }
+
+      // Sync unit buttons on the "Add Custom Field" form
+      function syncNewFieldUnitButtons() {
+        const inrBtn = document.getElementById('newUnitInrBtn');
+        const pctBtn = document.getElementById('newUnitPctBtn');
+        const prefixEl = document.getElementById('newFieldUnitPrefix');
+        const suffixEl = document.getElementById('newFieldUnitSuffix');
+        const amountInput = document.getElementById('newFieldAmount');
+        if (!inrBtn || !pctBtn) return;
+
+        if (state.newFieldUnit === 'pct') {
+          pctBtn.className = 'px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-600 text-white cursor-pointer';
+          inrBtn.className = 'px-1.5 py-0.5 rounded text-[10px] font-semibold text-slate-600 cursor-pointer';
+          prefixEl.classList.add('hidden');
+          suffixEl.classList.remove('hidden');
+          amountInput.placeholder = '10';
+          amountInput.max = '100';
+        } else {
+          inrBtn.className = 'px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-600 text-white cursor-pointer';
+          pctBtn.className = 'px-1.5 py-0.5 rounded text-[10px] font-semibold text-slate-600 cursor-pointer';
+          prefixEl.classList.remove('hidden');
+          suffixEl.classList.add('hidden');
+          amountInput.placeholder = '5000';
+          amountInput.removeAttribute('max');
+        }
+      }
+
+      // Load initial state from LocalStorage or default preset
+      function loadState() {
+        loadSavedProfiles();
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && typeof parsed.income === 'number' && Array.isArray(parsed.fields) && parsed.fields.length > 0) {
+              state.income = parsed.income;
+              state.fields = parsed.fields.map(f => ({
+                ...f,
+                category: normalizeCategoryKey(f.category)
+              }));
+              state.allocMode = parsed.allocMode === 'pct' ? 'pct' : 'inr';
+              state.chartMode = parsed.chartMode || 'fields';
+              state.collapsedCats = parsed.collapsedCats && typeof parsed.collapsedCats === 'object' ? parsed.collapsedCats : {};
+              state.activeProfileName = typeof parsed.activeProfileName === 'string' ? parsed.activeProfileName : '';
+              syncAllocModeButtons();
+              syncActiveProfileBadge();
+              return;
+            }
+          }
+        } catch (e) {
+          // Fallback to preset
+        }
+        applyPreset('pg_phase1', false);
+      }
+
+      // Apply a named preset
+      function applyPreset(presetKey, notify = true) {
+        const preset = PRESETS[presetKey];
+        if (!preset) return;
+        state.income = preset.income;
+        state.fields = preset.fields.map(f => ({ ...f }));
+        state.hoveredSliceIndex = -1;
+
+        syncIncomeInputs();
+        syncAllocModeButtons();
+        syncActiveProfileBadge();
+        renderFieldsList();
+        recalculateAndRender();
+        saveState();
+        if (notify) {
+          showToast('Loaded preset scenario');
+        }
+      }
+
+      // Sync income input and slider UI
+      function syncIncomeInputs() {
+        const incomeInput = document.getElementById('incomeInput');
+        const incomeSlider = document.getElementById('incomeSlider');
+        const annualTag = document.getElementById('annualIncomeTag');
+
+        incomeInput.value = formatIndianNumber(state.income);
+        incomeSlider.value = Math.min(250000, Math.max(10000, state.income));
+        annualTag.textContent = `${formatINR(state.income * 12)} / yr`;
+      }
+
+      // Escape HTML safely
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      // Render all custom fields grouped by the 4 categories (collapsible)
+      function renderFieldsList() {
+        const container = document.getElementById('fieldsContainer');
+        container.innerHTML = '';
+
+        const isPctMode = state.allocMode === 'pct';
+        const safeIncome = Math.max(1, state.income);
+
+        CATEGORY_ORDER.forEach(catKey => {
+          const meta = CATEGORY_META[catKey];
+          const catFields = state.fields.filter(f => f.category === catKey);
+          const activeCatFields = catFields.filter(f => f.enabled);
+          const catTotal = activeCatFields.reduce((acc, f) => acc + f.amount, 0);
+          const catPct = ((catTotal / safeIncome) * 100).toFixed(1);
+          const isCollapsed = Boolean(state.collapsedCats[catKey]);
+
+          const card = document.createElement('div');
+          card.className = 'bg-white rounded-2xl border border-slate-200 p-4 shadow-sm';
+
+          const headerHtml = `
+            <div
+              role="button"
+              tabindex="0"
+              data-action="toggle-collapse"
+              data-cat="${catKey}"
+              aria-expanded="${!isCollapsed}"
+              class="flex items-center justify-between gap-2 select-none cursor-pointer group ${isCollapsed ? '' : 'mb-3 pb-2.5 border-b border-slate-100'}"
+            >
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="w-6 h-6 rounded-lg bg-slate-100 group-hover:bg-slate-200/80 text-slate-600 flex items-center justify-center shrink-0 transition">
+                  <svg class="w-3.5 h-3.5 transition-transform duration-200 ${isCollapsed ? '-rotate-90' : 'rotate-0'}" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </span>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5">
+                    <h3 class="text-sm font-bold text-slate-900 truncate">${meta.title}</h3>
+                    <span class="text-[11px] font-semibold text-slate-400 shrink-0">(${activeCatFields.length}/${catFields.length})</span>
+                  </div>
+                  <p class="text-[11px] text-slate-400 truncate">${meta.subtitle}</p>
+                </div>
+              </div>
+              <span id="cat-total-${catKey}" class="text-xs font-extrabold px-2.5 py-1 rounded-full border ${meta.badgeBg} tabular-nums shrink-0">
+                ${formatINR(catTotal)} (${catPct}%)
+              </span>
+            </div>
+          `;
+
+          let rowsHtml = '';
+          if (!isCollapsed) {
+            if (catFields.length === 0) {
+              rowsHtml = `<p class="text-xs text-slate-400 italic py-2">No fields in this bucket yet. Add one above.</p>`;
+            } else {
+              rowsHtml = `<div class="space-y-3">` + catFields.map(field => {
+                const pctOfIncome = (field.amount / safeIncome) * 100;
+                const sliderMin = 0;
+                const sliderMax = isPctMode ? 100 : Math.max(field.max || 25000, field.amount);
+                const sliderStep = isPctMode ? 0.5 : (sliderMax <= 5000 ? 50 : 250);
+                const sliderVal = isPctMode ? Math.min(100, Number(pctOfIncome.toFixed(1))) : field.amount;
+                const inputVal = isPctMode ? formatPctValue(pctOfIncome) : field.amount;
+                const secondaryBadgeText = isPctMode ? formatINR(field.amount) : `${pctOfIncome.toFixed(1)}%`;
+
+                return `
+                  <div data-field-row="${field.id}" class="p-3 rounded-xl border ${field.enabled ? 'bg-slate-50/80 border-slate-200/90' : 'bg-slate-50/40 border-slate-200/50 opacity-60'} transition">
+                    <div class="flex items-center justify-between gap-2 mb-2">
+                      <div class="flex items-center gap-2 min-w-0 flex-1">
+                        <input
+                          type="checkbox"
+                          data-action="toggle"
+                          data-id="${field.id}"
+                          ${field.enabled ? 'checked' : ''}
+                          aria-label="Enable ${escapeHtml(field.name)}"
+                          class="w-4 h-4 rounded text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer shrink-0"
+                        />
+                        <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${field.color}"></span>
+                        <span
+                          data-role="field-label"
+                          data-action="edit-title"
+                          data-id="${field.id}"
+                          title="Click to edit title"
+                          class="text-xs sm:text-sm font-semibold text-slate-800 hover:text-blue-600 hover:underline decoration-dashed underline-offset-4 cursor-text truncate"
+                        >${escapeHtml(field.name)}</span>
+                      </div>
+
+                      <div class="flex items-center gap-1.5 shrink-0">
+                        <span data-role="secondary-badge" class="text-[11px] font-bold text-slate-600 bg-white border border-slate-200 px-2 py-0.5 rounded-md tabular-nums">
+                          ${secondaryBadgeText}
+                        </span>
+                        <button
+                          type="button"
+                          data-action="delete"
+                          data-id="${field.id}"
+                          aria-label="Remove ${escapeHtml(field.name)}"
+                          title="Remove field"
+                          class="p-1 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition cursor-pointer"
+                        >
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="field-control-row">
+                      <div class="field-slider-wrap">
+                        <input
+                          type="range"
+                          data-action="slider"
+                          data-id="${field.id}"
+                          min="${sliderMin}"
+                          max="${sliderMax}"
+                          step="${sliderStep}"
+                          value="${sliderVal}"
+                          ${field.enabled ? '' : 'disabled'}
+                          aria-label="${escapeHtml(field.name)} slider"
+                        />
+                      </div>
+                      <div class="field-amount-box">
+                        ${isPctMode ? '' : '<span class="text-xs font-bold text-slate-400 mr-1 shrink-0">₹</span>'}
+                        <input
+                          type="number"
+                          data-action="amount"
+                          data-id="${field.id}"
+                          min="0"
+                          ${isPctMode ? 'max="100" step="0.5"' : 'step="50"'}
+                          value="${inputVal}"
+                          ${field.enabled ? '' : 'disabled'}
+                          aria-label="${escapeHtml(field.name)} allocation"
+                        />
+                        ${isPctMode ? '<span class="text-xs font-bold text-slate-400 ml-1 shrink-0">%</span>' : ''}
+                      </div>
+                    </div>
+                  </div>
+                `;
+              }).join('') + `</div>`;
+            }
+          }
+
+          card.innerHTML = headerHtml + rowsHtml;
+          container.appendChild(card);
+        });
+      }
+
+      // Recalculate all totals, update DOM badges and canvas chart
+      function recalculateAndRender() {
+        const income = Math.max(1, state.income);
+        const activeFields = state.fields.filter(f => f.enabled);
+
+        const totalsByCat = {
+          essentials: activeFields.filter(f => f.category === 'essentials').reduce((s, f) => s + f.amount, 0),
+          lifestyle: activeFields.filter(f => f.category === 'lifestyle').reduce((s, f) => s + f.amount, 0),
+          liabilities: activeFields.filter(f => f.category === 'liabilities').reduce((s, f) => s + f.amount, 0),
+          savings: activeFields.filter(f => f.category === 'savings').reduce((s, f) => s + f.amount, 0)
+        };
+
+        const totalAllocated = totalsByCat.essentials + totalsByCat.lifestyle + totalsByCat.liabilities + totalsByCat.savings;
+        const outflowsTotal = totalsByCat.essentials + totalsByCat.lifestyle + totalsByCat.liabilities;
+        const unallocated = income - totalAllocated;
+        const savingsPlusBuffer = totalsByCat.savings + Math.max(0, unallocated);
+
+        // Update category header subtotals (₹ + %) directly
+        CATEGORY_ORDER.forEach(catKey => {
+          const badgeEl = document.getElementById(`cat-total-${catKey}`);
+          if (badgeEl) {
+            const amt = totalsByCat[catKey];
+            const pct = ((amt / income) * 100).toFixed(1);
+            badgeEl.textContent = `${formatINR(amt)} (${pct}%)`;
+          }
+        });
+
+        // Update Top KPI Cards
+        document.getElementById('kpiAllocatedAmt').textContent = formatINR(totalAllocated);
+        document.getElementById('kpiAllocatedPct').textContent = ((totalAllocated / income) * 100).toFixed(1) + '%';
+        document.getElementById('kpiActiveCount').textContent = activeFields.length;
+
+        document.getElementById('kpiExpensesAmt').textContent = formatINR(outflowsTotal);
+        document.getElementById('kpiExpensesPct').textContent = ((outflowsTotal / income) * 100).toFixed(1) + '%';
+
+        const surplusCard = document.getElementById('kpiSurplusCard');
+        const surplusLabel = document.getElementById('kpiSurplusLabel');
+        const surplusAmt = document.getElementById('kpiSurplusAmt');
+        const surplusPct = document.getElementById('kpiSurplusPct');
+        const bufferSubtext = document.getElementById('kpiBufferSubtext');
+
+        if (unallocated < 0) {
+          surplusCard.className = 'bg-white rounded-2xl border border-rose-300 p-4 shadow-sm';
+          surplusLabel.className = 'text-xs font-semibold text-rose-700';
+          surplusLabel.textContent = 'Over-Budget Deficit';
+          surplusAmt.className = 'text-xl font-extrabold text-rose-600 tabular-nums';
+          surplusAmt.textContent = formatINR(unallocated);
+          surplusPct.className = 'text-xs font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700';
+          surplusPct.textContent = ((Math.abs(unallocated) / income) * 100).toFixed(1) + '% over';
+          bufferSubtext.textContent = `Trim ${formatINR(Math.abs(unallocated))} to balance`;
+        } else {
+          surplusCard.className = 'bg-white rounded-2xl border border-emerald-200 p-4 shadow-sm';
+          surplusLabel.className = 'text-xs font-semibold text-emerald-700';
+          surplusLabel.textContent = 'Savings & Free Cash';
+          surplusAmt.className = 'text-xl font-extrabold text-emerald-600 tabular-nums';
+          surplusAmt.textContent = formatINR(savingsPlusBuffer);
+          surplusPct.className = 'text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700';
+          surplusPct.textContent = ((savingsPlusBuffer / income) * 100).toFixed(1) + '%';
+          bufferSubtext.textContent = `Unallocated buffer: ${formatINR(unallocated)}`;
+        }
+
+        // Update Mobile Sticky Summary Bar
+        document.getElementById('mobileAllocatedPct').textContent = ((totalAllocated / income) * 100).toFixed(1) + '%';
+        const mobileBufferLabel = document.getElementById('mobileBufferLabel');
+        const mobileBufferAmt = document.getElementById('mobileBufferAmt');
+        if (unallocated < 0) {
+          mobileBufferLabel.textContent = 'Over Budget';
+          mobileBufferAmt.className = 'text-sm font-extrabold text-rose-400 tabular-nums';
+          mobileBufferAmt.textContent = formatINR(unallocated);
+        } else {
+          mobileBufferLabel.textContent = 'Unallocated';
+          mobileBufferAmt.className = 'text-sm font-extrabold text-emerald-400 tabular-nums';
+          mobileBufferAmt.textContent = formatINR(unallocated);
+        }
+
+        // Build Donut Chart Slices
+        let rawItems = [];
+        if (state.chartMode === 'buckets') {
+          CATEGORY_ORDER.forEach(catKey => {
+            if (totalsByCat[catKey] > 0) {
+              rawItems.push({
+                label: CATEGORY_META[catKey].title,
+                value: totalsByCat[catKey],
+                color: CATEGORY_META[catKey].chartColor
+              });
+            }
+          });
+        } else {
+          activeFields.forEach(f => {
+            if (f.amount > 0) {
+              rawItems.push({ label: f.name, value: f.amount, color: f.color });
+            }
+          });
+        }
+
+        if (unallocated > 0) {
+          rawItems.push({ label: 'Unallocated Cash Buffer', value: unallocated, color: '#cbd5e1' });
+        }
+
+        const totalSliceVal = rawItems.reduce((sum, item) => sum + item.value, 0);
+        let currentAngle = -Math.PI / 2;
+
+        currentSlices = rawItems.map(item => {
+          const sliceAngle = totalSliceVal > 0 ? (item.value / totalSliceVal) * Math.PI * 2 : 0;
+          const slice = {
+            label: item.label,
+            value: item.value,
+            color: item.color,
+            pctOfIncome: (item.value / income) * 100,
+            startAngle: currentAngle,
+            endAngle: currentAngle + sliceAngle
+          };
+          currentAngle += sliceAngle;
+          return slice;
+        });
+
+        drawDonutCanvas();
+        renderDonutLegend();
+      }
+
+      // Draw responsive HTML5 Canvas Donut Ring
+      function drawDonutCanvas() {
+        const canvas = document.getElementById('splitDonutCanvas');
+        const wrapper = document.getElementById('canvasWrapper');
+        if (!canvas || !wrapper) return;
+
+        const size = Math.max(200, Math.floor(wrapper.getBoundingClientRect().width));
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = size * dpr;
+        canvas.height = size * dpr;
+        canvas.style.width = size + 'px';
+        canvas.style.height = size + 'px';
+
+        const ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr);
+        ctx.clearRect(0, 0, size, size);
+
+        const cx = size / 2;
+        const cy = size / 2;
+        const outerR = size * 0.45;
+        const innerR = size * 0.28;
+
+        if (currentSlices.length === 0) {
+          ctx.beginPath();
+          ctx.arc(cx, cy, outerR, 0, Math.PI * 2);
+          ctx.arc(cx, cy, innerR, 0, Math.PI * 2, true);
+          ctx.fillStyle = '#e2e8f0';
+          ctx.fill();
+        } else {
+          currentSlices.forEach((slice, idx) => {
+            const isHovered = idx === state.hoveredSliceIndex;
+            const rOut = isHovered ? outerR + 6 : outerR;
+
+            ctx.beginPath();
+            ctx.arc(cx, cy, rOut, slice.startAngle, slice.endAngle);
+            ctx.arc(cx, cy, innerR, slice.endAngle, slice.startAngle, true);
+            ctx.closePath();
+
+            ctx.fillStyle = slice.color;
+            ctx.fill();
+
+            if (currentSlices.length > 1) {
+              ctx.lineWidth = 2;
+              ctx.strokeStyle = '#ffffff';
+              ctx.stroke();
+            }
+          });
+        }
+
+        // Center Callout Text
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        if (state.hoveredSliceIndex >= 0 && currentSlices[state.hoveredSliceIndex]) {
+          const active = currentSlices[state.hoveredSliceIndex];
+          ctx.fillStyle = '#64748b';
+          ctx.font = '600 11px Inter, sans-serif';
+          const shortTitle = active.label.length > 18 ? active.label.slice(0, 17) + '…' : active.label;
+          ctx.fillText(shortTitle, cx, cy - 18);
+
+          ctx.fillStyle = '#0f172a';
+          ctx.font = '800 17px Inter, sans-serif';
+          ctx.fillText(formatINR(active.value), cx, cy + 2);
+
+          ctx.fillStyle = '#2563eb';
+          ctx.font = '700 12px Inter, sans-serif';
+          ctx.fillText(active.pctOfIncome.toFixed(1) + '% of income', cx, cy + 21);
+        } else {
+          ctx.fillStyle = '#64748b';
+          ctx.font = '600 11px Inter, sans-serif';
+          ctx.fillText('Monthly Income', cx, cy - 16);
+
+          ctx.fillStyle = '#0f172a';
+          ctx.font = '800 18px Inter, sans-serif';
+          ctx.fillText(formatINR(state.income), cx, cy + 4);
+
+          ctx.fillStyle = '#10b981';
+          ctx.font = '700 11px Inter, sans-serif';
+          ctx.fillText('100% Mapped', cx, cy + 23);
+        }
+      }
+
+      // Render interactive legend items alongside Donut Chart
+      function renderDonutLegend() {
+        const listEl = document.getElementById('donutLegendList');
+        if (!listEl) return;
+        listEl.innerHTML = '';
+
+        if (currentSlices.length === 0) {
+          listEl.innerHTML = '<p class="text-xs text-slate-400 italic">Enable at least one field to view breakdown.</p>';
+          return;
+        }
+
+        currentSlices.forEach((slice, idx) => {
+          const isHovered = idx === state.hoveredSliceIndex;
+          const item = document.createElement('div');
+          item.className = `flex items-center justify-between gap-2 p-2 rounded-xl border text-xs cursor-pointer transition ${
+            isHovered ? 'bg-blue-50/70 border-blue-200 shadow-xs' : 'bg-slate-50/60 border-slate-100 hover:bg-slate-100/70'
+          }`;
+
+          item.innerHTML = `
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${slice.color}"></span>
+              <span class="font-semibold text-slate-800 truncate">${escapeHtml(slice.label)}</span>
+            </div>
+            <div class="flex items-center gap-2 shrink-0 tabular-nums">
+              <span class="font-bold text-slate-900">${formatINR(slice.value)}</span>
+              <span class="text-[11px] font-bold text-slate-500 bg-white border border-slate-200 px-1.5 py-0.5 rounded-md">${slice.pctOfIncome.toFixed(1)}%</span>
+            </div>
+          `;
+
+          item.addEventListener('mouseenter', () => {
+            state.hoveredSliceIndex = idx;
+            drawDonutCanvas();
+            renderDonutLegend();
+          });
+          item.addEventListener('mouseleave', () => {
+            state.hoveredSliceIndex = -1;
+            drawDonutCanvas();
+            renderDonutLegend();
+          });
+          item.addEventListener('click', () => {
+            state.hoveredSliceIndex = state.hoveredSliceIndex === idx ? -1 : idx;
+            drawDonutCanvas();
+            renderDonutLegend();
+          });
+
+          listEl.appendChild(item);
+        });
+      }
+
+      // Add a new custom field
+      function addCustomField(name, category, rawValue, unit, maxVal, color) {
+        const cleanName = name.trim();
+        if (!cleanName) return;
+
+        const targetCat = normalizeCategoryKey(category);
+        let numericAmt = 0;
+        if (unit === 'pct') {
+          const pct = Math.max(0, Math.min(100, Number(rawValue) || 0));
+          numericAmt = Math.round((pct / 100) * Math.max(1, state.income));
+        } else {
+          numericAmt = Math.max(0, Math.round(Number(rawValue) || 0));
+        }
+
+        const numericMax = maxVal && Number(maxVal) > 0
+          ? Math.max(Number(maxVal), numericAmt)
+          : Math.max(25000, Math.ceil((numericAmt * 2) / 5000) * 5000);
+
+        state.fields.push({
+          id: 'custom_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+          name: cleanName,
+          category: targetCat,
+          amount: numericAmt,
+          max: numericMax,
+          color: color || '#2563eb',
+          enabled: true
+        });
+
+        // Automatically unfold the category where the field was added
+        state.collapsedCats[targetCat] = false;
+
+        renderFieldsList();
+        recalculateAndRender();
+        saveState();
+        showToast(`Added "${cleanName}" (${formatINR(numericAmt)})`);
+      }
+
+      // Bind all DOM event listeners
+      function bindEvents() {
+        const incomeInput = document.getElementById('incomeInput');
+        const incomeSlider = document.getElementById('incomeSlider');
+        const annualTag = document.getElementById('annualIncomeTag');
+
+        // Non-blocking Indian comma-formatted income typing
+        incomeInput.addEventListener('input', e => {
+          const rawDigits = e.target.value.replace(/[^0-9]/g, '');
+          if (rawDigits === '') {
+            state.income = 0;
+            annualTag.textContent = '₹0 / yr';
+            if (state.allocMode === 'pct') renderFieldsList();
+            recalculateAndRender();
+            return;
+          }
+          const val = parseInt(rawDigits, 10);
+          state.income = val;
+          e.target.value = val.toLocaleString('en-IN');
+          incomeSlider.value = Math.min(250000, Math.max(10000, val));
+          annualTag.textContent = `${formatINR(val * 12)} / yr`;
+          if (state.allocMode === 'pct') renderFieldsList();
+          recalculateAndRender();
+          saveState();
+        });
+
+        incomeInput.addEventListener('blur', () => {
+          if (!state.income || state.income < 1000) {
+            state.income = 1000;
+            showToast('Minimum monthly income set to ₹1,000', true);
+          }
+          syncIncomeInputs();
+          if (state.allocMode === 'pct') renderFieldsList();
+          recalculateAndRender();
+          saveState();
+        });
+
+        incomeSlider.addEventListener('input', e => {
+          state.income = parseInt(e.target.value, 10) || 10000;
+          syncIncomeInputs();
+          if (state.allocMode === 'pct') renderFieldsList();
+          recalculateAndRender();
+          saveState();
+        });
+
+        // Global Allocation Mode Toggle (₹ Amount vs % of Income)
+        document.getElementById('allocModeInrBtn').addEventListener('click', () => {
+          if (state.allocMode === 'inr') return;
+          state.allocMode = 'inr';
+          syncAllocModeButtons();
+          renderFieldsList();
+          saveState();
+        });
+
+        document.getElementById('allocModePctBtn').addEventListener('click', () => {
+          if (state.allocMode === 'pct') return;
+          state.allocMode = 'pct';
+          syncAllocModeButtons();
+          renderFieldsList();
+          saveState();
+        });
+
+        // New Field Unit Toggle (₹ INR vs % Share)
+        document.getElementById('newUnitInrBtn').addEventListener('click', () => {
+          state.newFieldUnit = 'inr';
+          syncNewFieldUnitButtons();
+        });
+
+        document.getElementById('newUnitPctBtn').addEventListener('click', () => {
+          state.newFieldUnit = 'pct';
+          syncNewFieldUnitButtons();
+        });
+
+        // Color swatch selection
+        document.querySelectorAll('.color-swatch').forEach(swatch => {
+          swatch.addEventListener('click', () => {
+            state.selectedColor = swatch.dataset.color;
+            document.querySelectorAll('.color-swatch').forEach(s => {
+              s.classList.remove('ring-2', 'ring-offset-2', 'ring-blue-600', 'ring-slate-800');
+            });
+            swatch.classList.add('ring-2', 'ring-offset-2', 'ring-slate-800');
+          });
+        });
+
+        // Add Custom Field Form submission
+        document.getElementById('addFieldForm').addEventListener('submit', e => {
+          e.preventDefault();
+          const nameEl = document.getElementById('newFieldName');
+          const catEl = document.getElementById('newFieldCategory');
+          const amtEl = document.getElementById('newFieldAmount');
+          const maxEl = document.getElementById('newFieldMax');
+
+          addCustomField(nameEl.value, catEl.value, amtEl.value, state.newFieldUnit, maxEl.value, state.selectedColor);
+
+          nameEl.value = '';
+          amtEl.value = '';
+          maxEl.value = '';
+        });
+
+        // Quick-add suggestion chips
+        document.querySelectorAll('.quick-add-chip').forEach(chip => {
+          chip.addEventListener('click', () => {
+            addCustomField(
+              chip.dataset.quickName,
+              chip.dataset.quickCat,
+              chip.dataset.quickAmt,
+              'inr',
+              '',
+              chip.dataset.quickColor
+            );
+          });
+        });
+
+        // Delegated interactions inside Custom Fields List
+        const fieldsContainer = document.getElementById('fieldsContainer');
+
+        fieldsContainer.addEventListener('input', e => {
+          const target = e.target;
+          const action = target.dataset.action;
+          const id = target.dataset.id;
+          if (!action || !id) return;
+
+          const field = state.fields.find(f => f.id === id);
+          if (!field) return;
+
+          const row = target.closest('[data-field-row]');
+          const isPctMode = state.allocMode === 'pct';
+          const safeIncome = Math.max(1, state.income);
+
+          if (action === 'slider') {
+            if (isPctMode) {
+              const pctVal = Math.max(0, Math.min(100, parseFloat(target.value) || 0));
+              field.amount = Math.round((pctVal / 100) * safeIncome);
+              if (row) {
+                const amtInput = row.querySelector('input[data-action="amount"]');
+                const badgeEl = row.querySelector('[data-role="secondary-badge"]');
+                if (amtInput) amtInput.value = formatPctValue(pctVal);
+                if (badgeEl) badgeEl.textContent = formatINR(field.amount);
+              }
+            } else {
+              const val = Math.max(0, Math.round(Number(target.value) || 0));
+              field.amount = val;
+              if (row) {
+                const amtInput = row.querySelector('input[data-action="amount"]');
+                const badgeEl = row.querySelector('[data-role="secondary-badge"]');
+                if (amtInput) amtInput.value = val;
+                if (badgeEl) badgeEl.textContent = ((val / safeIncome) * 100).toFixed(1) + '%';
+              }
+            }
+            recalculateAndRender();
+            saveState();
+          } else if (action === 'amount') {
+            if (isPctMode) {
+              const rawPct = parseFloat(target.value);
+              const pctVal = isNaN(rawPct) ? 0 : Math.max(0, Math.min(100, rawPct));
+              field.amount = Math.round((pctVal / 100) * safeIncome);
+              if (row) {
+                const sliderEl = row.querySelector('input[data-action="slider"]');
+                const badgeEl = row.querySelector('[data-role="secondary-badge"]');
+                if (sliderEl) sliderEl.value = pctVal;
+                if (badgeEl) badgeEl.textContent = formatINR(field.amount);
+              }
+            } else {
+              const rawVal = target.value === '' ? 0 : Math.max(0, Math.round(Number(target.value) || 0));
+              field.amount = rawVal;
+              if (rawVal > field.max) {
+                field.max = Math.ceil(rawVal / 5000) * 5000;
+              }
+              if (row) {
+                const sliderEl = row.querySelector('input[data-action="slider"]');
+                const badgeEl = row.querySelector('[data-role="secondary-badge"]');
+                if (sliderEl) {
+                  sliderEl.max = field.max;
+                  sliderEl.value = rawVal;
+                }
+                if (badgeEl) badgeEl.textContent = ((rawVal / safeIncome) * 100).toFixed(1) + '%';
+              }
+            }
+            recalculateAndRender();
+            saveState();
+          }
+        });
+
+        fieldsContainer.addEventListener('change', e => {
+          const target = e.target;
+          const action = target.dataset.action;
+          const id = target.dataset.id;
+          if (!action || !id) return;
+
+          const field = state.fields.find(f => f.id === id);
+          if (!field) return;
+
+          if (action === 'toggle') {
+            field.enabled = target.checked;
+            renderFieldsList();
+            recalculateAndRender();
+            saveState();
+          } else if (action === 'amount') {
+            if (target.value === '') {
+              target.value = '0';
+              field.amount = 0;
+              recalculateAndRender();
+              saveState();
+            }
+          }
+        });
+
+        // Keyboard accessibility for folding category headers
+        fieldsContainer.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            const headerEl = e.target.closest('[data-action="toggle-collapse"]');
+            if (headerEl) {
+              e.preventDefault();
+              const catKey = headerEl.dataset.cat;
+              state.collapsedCats[catKey] = !state.collapsedCats[catKey];
+              renderFieldsList();
+              saveState();
+            }
+          }
+        });
+
+        fieldsContainer.addEventListener('click', e => {
+          // Fold / Unfold category card
+          const collapseHeader = e.target.closest('[data-action="toggle-collapse"]');
+          if (collapseHeader) {
+            const catKey = collapseHeader.dataset.cat;
+            state.collapsedCats[catKey] = !state.collapsedCats[catKey];
+            renderFieldsList();
+            saveState();
+            return;
+          }
+
+          // Delete field
+          const deleteBtn = e.target.closest('button[data-action="delete"]');
+          if (deleteBtn) {
+            const id = deleteBtn.dataset.id;
+            const removed = state.fields.find(f => f.id === id);
+            state.fields = state.fields.filter(f => f.id !== id);
+            state.hoveredSliceIndex = -1;
+            renderFieldsList();
+            recalculateAndRender();
+            saveState();
+            if (removed) {
+              showToast(`Removed "${removed.name}"`);
+            }
+            return;
+          }
+
+          // On-click editable field title
+          const titleSpan = e.target.closest('[data-action="edit-title"]');
+          if (titleSpan) {
+            const id = titleSpan.dataset.id;
+            const field = state.fields.find(f => f.id === id);
+            if (!field) return;
+
+            const inlineInput = document.createElement('input');
+            inlineInput.type = 'text';
+            inlineInput.value = field.name;
+            inlineInput.maxLength = 40;
+            inlineInput.className = 'w-full text-xs sm:text-sm font-semibold text-slate-900 bg-white border border-blue-500 rounded-md px-2 py-0.5 outline-none';
+
+            titleSpan.replaceWith(inlineInput);
+            inlineInput.focus();
+            inlineInput.select();
+
+            const commitRename = () => {
+              const trimmed = inlineInput.value.trim();
+              if (trimmed) {
+                field.name = trimmed;
+                saveState();
+              }
+              renderFieldsList();
+              recalculateAndRender();
+            };
+
+            inlineInput.addEventListener('blur', commitRename, { once: true });
+            inlineInput.addEventListener('keydown', ev => {
+              if (ev.key === 'Enter') {
+                ev.preventDefault();
+                inlineInput.blur();
+              } else if (ev.key === 'Escape') {
+                inlineInput.value = field.name;
+                inlineInput.blur();
+              }
+            });
+          }
+        });
+
+        // Donut Chart Mode Toggle ("By Field" vs "By Bucket")
+        const modeFieldsBtn = document.getElementById('modeFieldsBtn');
+        const modeBucketsBtn = document.getElementById('modeBucketsBtn');
+
+        modeFieldsBtn.addEventListener('click', () => {
+          state.chartMode = 'fields';
+          state.hoveredSliceIndex = -1;
+          modeFieldsBtn.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-white text-slate-900 shadow-sm transition cursor-pointer';
+          modeBucketsBtn.className = 'px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition cursor-pointer';
+          recalculateAndRender();
+          saveState();
+        });
+
+        modeBucketsBtn.addEventListener('click', () => {
+          state.chartMode = 'buckets';
+          state.hoveredSliceIndex = -1;
+          modeBucketsBtn.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-white text-slate-900 shadow-sm transition cursor-pointer';
+          modeFieldsBtn.className = 'px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition cursor-pointer';
+          recalculateAndRender();
+          saveState();
+        });
+
+        // Canvas Interactive Hover / Tap Slice Detection
+        const canvas = document.getElementById('splitDonutCanvas');
+        function detectSliceAtPointer(clientX, clientY) {
+          const rect = canvas.getBoundingClientRect();
+          const x = clientX - rect.left - rect.width / 2;
+          const y = clientY - rect.top - rect.height / 2;
+          const dist = Math.sqrt(x * x + y * y);
+          const outerR = rect.width * 0.46;
+          const innerR = rect.width * 0.27;
+
+          if (dist < innerR || dist > outerR) {
+            if (state.hoveredSliceIndex !== -1) {
+              state.hoveredSliceIndex = -1;
+              drawDonutCanvas();
+              renderDonutLegend();
+            }
+            return;
+          }
+
+          let angle = Math.atan2(y, x);
+          if (angle < -Math.PI / 2) angle += Math.PI * 2;
+
+          const foundIdx = currentSlices.findIndex(s => angle >= s.startAngle && angle <= s.endAngle);
+          if (foundIdx !== state.hoveredSliceIndex) {
+            state.hoveredSliceIndex = foundIdx;
+            drawDonutCanvas();
+            renderDonutLegend();
+          }
+        }
+
+        canvas.addEventListener('mousemove', e => detectSliceAtPointer(e.clientX, e.clientY));
+        canvas.addEventListener('mouseleave', () => {
+          if (state.hoveredSliceIndex !== -1) {
+            state.hoveredSliceIndex = -1;
+            drawDonutCanvas();
+            renderDonutLegend();
+          }
+        });
+        canvas.addEventListener('touchstart', e => {
+          if (e.touches && e.touches[0]) {
+            detectSliceAtPointer(e.touches[0].clientX, e.touches[0].clientY);
+          }
+        }, { passive: true });
+
+        // Reset to Default Button
+        document.getElementById('resetDefaultBtn').addEventListener('click', () => {
+          localStorage.removeItem(STORAGE_KEY);
+          state.allocMode = 'inr';
+          state.collapsedCats = {};
+          state.activeProfileName = '';
+          applyPreset('pg_phase1', false);
+          showToast('Reset to default budget setup');
+        });
+
+        // Profiles Modal Events
+        document.getElementById('openProfilesBtn').addEventListener('click', openProfilesModal);
+        document.getElementById('closeProfilesBtn').addEventListener('click', closeProfilesModal);
+        document.getElementById('profilesModal').addEventListener('click', e => {
+          if (e.target.id === 'profilesModal') closeProfilesModal();
+        });
+
+        document.getElementById('saveProfileForm').addEventListener('submit', e => {
+          e.preventDefault();
+          const input = document.getElementById('profileNameInput');
+          if (input && input.value.trim()) {
+            saveCurrentAsProfile(input.value);
+          }
+        });
+
+        document.getElementById('savedProfilesList').addEventListener('click', e => {
+          const btn = e.target.closest('button[data-profile-action]');
+          if (!btn) return;
+          const action = btn.dataset.profileAction;
+          const id = btn.dataset.profileId;
+          if (action === 'load') {
+            loadProfileById(id);
+          } else if (action === 'delete') {
+            const target = savedProfiles.find(p => p.id === id);
+            savedProfiles = savedProfiles.filter(p => p.id !== id);
+            if (target && state.activeProfileName === target.name) {
+              state.activeProfileName = '';
+              saveState();
+            }
+            persistProfilesToStorage();
+            renderProfilesList();
+            if (target) showToast(`Deleted profile "${target.name}"`);
+          }
+        });
+
+        // Download JSON Profile Backup
+        document.getElementById('downloadJsonBtn').addEventListener('click', () => {
+          const payload = {
+            app: 'Lifestyle Budget Planner',
+            exportedAt: new Date().toISOString(),
+            activeProfileName: state.activeProfileName || 'Custom Budget Plan',
+            income: state.income,
+            allocMode: state.allocMode,
+            chartMode: state.chartMode,
+            collapsedCats: state.collapsedCats,
+            fields: state.fields,
+            savedProfiles: savedProfiles
+          };
+          const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          const safeFile = (state.activeProfileName || 'budget-plan').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          a.href = url;
+          a.download = `${safeFile}.json`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          showToast('Downloaded JSON profile backup');
+        });
+
+        // Import / Load JSON Profile File
+        document.getElementById('importJsonInput').addEventListener('change', e => {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = ev => {
+            try {
+              const data = JSON.parse(ev.target.result);
+              if (data && typeof data.income === 'number' && Array.isArray(data.fields)) {
+                state.income = data.income;
+                state.fields = data.fields.map(f => ({
+                  ...f,
+                  category: normalizeCategoryKey(f.category)
+                }));
+                state.allocMode = data.allocMode === 'pct' ? 'pct' : 'inr';
+                state.chartMode = data.chartMode || 'fields';
+                state.collapsedCats = data.collapsedCats && typeof data.collapsedCats === 'object' ? data.collapsedCats : {};
+                state.activeProfileName = data.activeProfileName || file.name.replace(/\.json$/i, '');
+
+                if (Array.isArray(data.savedProfiles)) {
+                  data.savedProfiles.forEach(imp => {
+                    if (imp && imp.name && Array.isArray(imp.fields) && !savedProfiles.some(sp => sp.name.toLowerCase() === imp.name.toLowerCase())) {
+                      savedProfiles.push(imp);
+                    }
+                  });
+                  persistProfilesToStorage();
+                }
+
+                syncIncomeInputs();
+                syncAllocModeButtons();
+                renderFieldsList();
+                recalculateAndRender();
+                saveState();
+                renderProfilesList();
+                closeProfilesModal();
+                showToast(`Loaded "${state.activeProfileName}" from JSON`);
+              } else {
+                showToast('Invalid budget JSON file format', true);
+              }
+            } catch (err) {
+              showToast('Could not parse JSON file', true);
+            }
+            e.target.value = '';
+          };
+          reader.readAsText(file);
+        });
+
+        // Export Summary (Copy to Clipboard using execCommand fallback)
+        document.getElementById('copySummaryBtn').addEventListener('click', () => {
+          const active = state.fields.filter(f => f.enabled);
+          const totalAlloc = active.reduce((s, f) => s + f.amount, 0);
+          const buffer = state.income - totalAlloc;
+
+          const lines = [
+            `MONTHLY LIFESTYLE BUDGET PLANNER SUMMARY`,
+            `Monthly Income: ${formatINR(state.income)} (${formatINR(state.income * 12)}/yr)`,
+            `----------------------------------------`,
+            ...active.map(f => {
+              const pct = ((f.amount / Math.max(1, state.income)) * 100).toFixed(1);
+              return `• ${f.name}: ${formatINR(f.amount)}/mo (${pct}%)`;
+            }),
+            `----------------------------------------`,
+            `Total Allocated: ${formatINR(totalAlloc)} (${((totalAlloc / Math.max(1, state.income)) * 100).toFixed(1)}%)`,
+            `Unallocated Buffer: ${formatINR(buffer)}`
+          ];
+
+          const textarea = document.createElement('textarea');
+          textarea.value = lines.join('\n');
+          textarea.style.position = 'fixed';
+          textarea.style.opacity = '0';
+          document.body.appendChild(textarea);
+          textarea.select();
+          try {
+            document.execCommand('copy');
+            showToast('Budget split copied to clipboard!');
+          } catch (err) {
+            showToast('Unable to copy summary', true);
+          }
+          document.body.removeChild(textarea);
+        });
+
+        // Redraw responsive canvas on window resize
+        window.addEventListener('resize', () => {
+          drawDonutCanvas();
+        });
+      }
+
+      // Initialize on window load
+      window.addEventListener('DOMContentLoaded', () => {
+        loadState();
+        syncIncomeInputs();
+        syncNewFieldUnitButtons();
+        renderFieldsList();
+        recalculateAndRender();
+        bindEvents();
+      });
+    })();
+  </script>
+</body>
+</html>
